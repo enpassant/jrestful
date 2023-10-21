@@ -124,7 +124,7 @@ public class VertxRestClient implements RestClient {
     final Link linkCall = linkOptional.get();
     final Option<String> in = linkCall.relLink().in().map(MediaType::name);
     final String out = linkCall.relLink().out().name();
-    final ClientResult<ClientState<T>> callResult = call(methodFn, rel, linkCall.uri(), content, in, out, responseClass);
+    final ClientResult<ClientState<T>> callResult = call(methodFn, rel, linkCall.path(), content, in, out, responseClass);
     callResult.onComplete(
       callState -> clientState.children().add(callState),
       throwable -> clientState.children().add(throwable)

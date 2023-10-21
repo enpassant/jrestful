@@ -25,14 +25,14 @@ public interface RestServer<T, A> {
 
   void buildHandler(
     final String transitionName,
-    final String uri,
+    final String path,
     final A authorization,
     final BiConsumer<RestServerHandler<T>, T> process
   );
 
   void buildHandler(
     final String transitionName,
-    final String uri,
+    final String path,
     final A authorization,
     final BiConsumer<RestServerHandler<T>, T> processHead,
     final BiConsumer<RestServerHandler<T>, T> process

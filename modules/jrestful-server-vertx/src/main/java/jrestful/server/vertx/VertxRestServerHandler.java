@@ -89,7 +89,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   ) {
     final String linkStr = headerLinks.stream()
       .filter(link -> user == null || authorization.match(user))
-      .map(l -> l.uri() + "; rel=\"" + l.relLink().rel() + "\"")
+      .map(l -> l.path() + "; rel=\"" + l.relLink().rel() + "\"")
       .collect(Collectors.joining(", "));
     response.putHeader("Link", linkStr);
   }
@@ -100,7 +100,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
           final RelLink relLink = link.relLink();
           final String rel = relLink.rel();
           return rel.equalsIgnoreCase(relName) ?
-            new Link(link.uri().replaceAll(param, value.get()), relLink) :
+            new Link(link.path().replaceAll(param, value.get()), relLink) :
             link;
         }
       ).collect(Collectors.toList());

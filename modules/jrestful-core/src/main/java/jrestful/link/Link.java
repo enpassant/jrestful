@@ -1,3 +1,3 @@
 package jrestful.link;
 
-public record Link(String uri, RelLink relLink) { }
+public record Link(String path, RelLink relLink) { }

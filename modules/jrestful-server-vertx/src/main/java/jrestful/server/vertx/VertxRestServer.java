@@ -61,25 +61,25 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
 
   public void buildHandler(
     final String transitionName,
-    final String uri,
+    final String path,
     final Authorization authorization,
     final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
-      transition -> createHandler(transition, uri, authorization)
+      transition -> createHandler(transition, path, authorization)
         .setProcess(process)
     );
   }
 
   public void buildHandler(
     final String transitionName,
-    final String uri,
+    final String path,
     final Authorization authorization,
     final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> processHead,
     final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
-      transition -> createHandler(transition, uri, authorization)
+      transition -> createHandler(transition, path, authorization)
         .setProcessHead(processHead)
         .setProcess(process)
     );
@@ -98,7 +98,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
 
   public RestServerHandler<RoutingContext> createHandler(
     final Transition transition,
-    final String uri,
+    final String path,
     final Authorization authorization
   ) {
     final RelLink relLink = transition.relLink();
@@ -106,7 +106,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final Method method = relLink.method();
     final HttpMethod httpMethod = convertMethod(method);
     final String contentType = relLink.out().name();
-    final Link link = new Link(uri, relLink);
+    final Link link = new Link(path, relLink);
     final List<Link> links = mediaTypeLinks.getOrDefault(
       contextName,
       new ArrayList<>()
@@ -119,12 +119,12 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
       relLink.rel(),
       authorization
     );
-    router.route(httpMethod, uri)
+    router.route(httpMethod, path)
       .consumes(relLink.in().map(MediaType::name).orElse("*/*"))
       .produces(contentType)
       .handler(handler);
 
-    router.route(HttpMethod.HEAD, uri)
+    router.route(HttpMethod.HEAD, path)
       .consumes(relLink.in().map(MediaType::name).orElse("*/*"))
       .produces(contentType)
       .handler(handler);
