@@ -14,12 +14,13 @@ import java.util.function.Consumer;
 public interface RestServer<T, A> {
   String API = "api";
 
+  String MT_API = "application/RestAPI+json";
   MediaType api = new MediaType(
-    "application/RestAPI+json",
+    MT_API,
     new TypeObject<>("RESTful API", "RESTful API")
   );
 
-  Transition apiTransition = new Transition(API, new Root(), RelLink.get("", api));
+  Transition apiTransition = new Transition(API, new Root(), RelLink.get("", MT_API));
 
   void init(final RestApi restApi, final Consumer<RestServer<T, A>> buildHandlers);
 

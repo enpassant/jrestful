@@ -86,13 +86,13 @@ public class AccountRestServer implements AccountMediaTypes {
     return new RestApi(
       types,
       restServer.apiTransition,
-      new Transition(LIST_ACCOUNTS, restServer.api, RelLink.get("accounts", accountList)),
-      new Transition(NEW_ACCOUNT, accountList, RelLink.put("new", name, account)),
-      new Transition(GET_ACCOUNT, accountList, RelLink.get("item", account)),
-      new Transition(DELETE_ACCOUNT, account, RelLink.delete("delete", account)),
-      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put("edit-name", changeName, account)),
-      new Transition(DEPOSIT, account, RelLink.put("deposit", deposit, account)),
-      new Transition(WITHDRAW, account, RelLink.put("withdraw", withdraw, account))
+      new Transition(LIST_ACCOUNTS, restServer.api, RelLink.get("accounts", APPLICATION_LIST_ACCOUNT_JSON)),
+      new Transition(NEW_ACCOUNT, accountList, RelLink.put("new", APPLICATION_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(GET_ACCOUNT, accountList, RelLink.get("item", APPLICATION_ACCOUNT_JSON)),
+      new Transition(DELETE_ACCOUNT, account, RelLink.delete("delete", APPLICATION_ACCOUNT_JSON)),
+      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put("edit-name", APPLICATION_CHANGE_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(DEPOSIT, account, RelLink.put("deposit", APPLICATION_DEPOSIT_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(WITHDRAW, account, RelLink.put("withdraw", APPLICATION_WITHDRAW_JSON, APPLICATION_ACCOUNT_JSON))
     );
   }
 

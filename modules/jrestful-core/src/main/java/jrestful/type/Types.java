@@ -3,6 +3,7 @@ package jrestful.type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Types {
@@ -23,6 +24,13 @@ public class Types {
     Arrays.stream(types).forEach(
       type -> mediaTypeMap.put(type.name(), type)
     );
+  }
+
+  public Optional<MediaType> getMediaType(final String name) {
+    return Optional.ofNullable(
+        mediaTypeMap.getOrDefault(name, null)
+      ).filter(mediaType -> mediaType instanceof MediaType)
+      .map(MediaType.class::cast);
   }
 
   @Override

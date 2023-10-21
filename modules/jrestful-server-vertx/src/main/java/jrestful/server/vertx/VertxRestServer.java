@@ -14,7 +14,6 @@ import jrestful.link.Link;
 import jrestful.link.RelLink;
 import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
-import jrestful.type.MediaType;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -105,7 +104,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final String contextName = transition.context().name();
     final Method method = relLink.method();
     final HttpMethod httpMethod = convertMethod(method);
-    final String contentType = relLink.out().name();
+    final String contentType = relLink.out();
     final Link link = new Link(path, relLink);
     final List<Link> links = mediaTypeLinks.getOrDefault(
       contextName,
@@ -120,12 +119,12 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
       authorization
     );
     router.route(httpMethod, path)
-      .consumes(relLink.in().map(MediaType::name).orElse("*/*"))
+      .consumes(relLink.in().orElse("*/*"))
       .produces(contentType)
       .handler(handler);
 
     router.route(HttpMethod.HEAD, path)
-      .consumes(relLink.in().map(MediaType::name).orElse("*/*"))
+      .consumes(relLink.in().orElse("*/*"))
       .produces(contentType)
       .handler(handler);
 

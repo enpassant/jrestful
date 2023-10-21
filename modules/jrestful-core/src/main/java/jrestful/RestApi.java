@@ -45,7 +45,10 @@ public record RestApi(Types types, Transition... transition) {
     return Arrays.stream(transition())
       .flatMap(t -> Stream.concat(t.relLink().in().stream(), Stream.of(t.relLink().out())))
       .distinct()
-      .filter(mediaType -> mediaType.name().equalsIgnoreCase(contentType))
+      .filter(mediaType -> mediaType.equalsIgnoreCase(contentType))
+      .map(mediaType -> types.getMediaType(mediaType))
+      .filter(Optional::isPresent)
+      .map(Optional::get)
       .findAny();
   }
 

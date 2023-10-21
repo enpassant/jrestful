@@ -6,8 +6,6 @@ import jrestful.RestApi;
 import jrestful.fp.Some;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
-import jrestful.type.MediaType;
-import jrestful.type.TypeObject;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -66,8 +64,8 @@ public class ClientState<T> {
           new RelLink(
             matcher.group(2),
             Method.valueOf(matcher.group(3)),
-            new Some<>(new MediaType(matcher.group(4), new TypeObject<>("", ""))),
-            new MediaType(matcher.group(5), new TypeObject<>("", ""))
+            new Some<>(matcher.group(4)),
+            matcher.group(5)
           )
         )
       );
@@ -81,8 +79,8 @@ public class ClientState<T> {
       .filter(link -> {
         final RelLink relLink = link.relLink();
         final boolean isRelEquals = relLink.rel().equalsIgnoreCase(rel);
-        final boolean isOutTypeMatch = isKnownMediaType(relLink.out().name(), classMediaTypeMap);
-        final Boolean isInTypeMatch = relLink.in().map(in -> isKnownMediaType(in.name(), classMediaTypeMap))
+        final boolean isOutTypeMatch = isKnownMediaType(relLink.out(), classMediaTypeMap);
+        final Boolean isInTypeMatch = relLink.in().map(in -> isKnownMediaType(in, classMediaTypeMap))
           .orElse(true);
         return isRelEquals && isOutTypeMatch && isInTypeMatch;
       })
