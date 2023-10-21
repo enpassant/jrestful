@@ -3,6 +3,7 @@ package jrestful.client;
 import jrestful.Context;
 import jrestful.Method;
 import jrestful.RestApi;
+import jrestful.fp.None;
 import jrestful.fp.Some;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
@@ -47,7 +48,7 @@ public class ClientState<T> {
   ) {
     return parseLink(linkStr)
       .flatMap(parsedLink ->
-        restApi.getLink(context, parsedLink.relLink().rel())
+        restApi.getLink(context, parsedLink.relLink())
           .map(relLink -> new Link(parsedLink.path(), relLink))
       );
   }
@@ -58,13 +59,14 @@ public class ClientState<T> {
     );
     final Matcher matcher = pattern.matcher(linkStr);
     if (matcher.find()) {
+      final String group4 = matcher.group(4);
       return Optional.of(
         new Link(
           matcher.group(1),
           new RelLink(
             matcher.group(2),
             Method.valueOf(matcher.group(3)),
-            new Some<>(matcher.group(4)),
+            group4.isBlank() ? new None<>() : new Some<>(group4),
             matcher.group(5)
           )
         )

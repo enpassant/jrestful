@@ -33,11 +33,11 @@ public record RestApi(Types types, Transition... transition) {
         '}';
   }
 
-  public Optional<RelLink> getLink(final Context context, final String rel) {
+  public Optional<RelLink> getLink(final Context context, final RelLink relLink) {
     return Arrays.stream(transition())
       .filter(transition -> transition.context().equals(context))
       .map(Transition::relLink)
-      .filter(relLink -> relLink.rel().equalsIgnoreCase(rel))
+      .filter(rl -> relLink.equals(rl))
       .findAny();
   }
 
