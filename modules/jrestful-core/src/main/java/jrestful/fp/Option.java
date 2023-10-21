@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -27,5 +28,7 @@ public interface Option<T> {
   T orElse(T newValue);
 
   void ifPresent(Consumer<T> handler);
+
+  Optional<T> toOptional();
 }
 

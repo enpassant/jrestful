@@ -8,6 +8,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.RestApi;
 import jrestful.Transition;
+import jrestful.link.Link;
 import jrestful.link.RelLink;
 import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
@@ -90,9 +91,9 @@ public class AccountRestServer implements AccountMediaTypes {
       new Transition(NEW_ACCOUNT, accountList, RelLink.put("new", APPLICATION_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
       new Transition(GET_ACCOUNT, accountList, RelLink.get("item", APPLICATION_ACCOUNT_JSON)),
       new Transition(DELETE_ACCOUNT, account, RelLink.delete("delete", APPLICATION_ACCOUNT_JSON)),
-      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put("edit-name", APPLICATION_CHANGE_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
-      new Transition(DEPOSIT, account, RelLink.put("deposit", APPLICATION_DEPOSIT_JSON, APPLICATION_ACCOUNT_JSON)),
-      new Transition(WITHDRAW, account, RelLink.put("withdraw", APPLICATION_WITHDRAW_JSON, APPLICATION_ACCOUNT_JSON))
+      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put("edit", APPLICATION_CHANGE_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(DEPOSIT, account, RelLink.put("edit", APPLICATION_DEPOSIT_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(WITHDRAW, account, RelLink.put("edit", APPLICATION_WITHDRAW_JSON, APPLICATION_ACCOUNT_JSON))
     );
   }
 
@@ -107,11 +108,14 @@ public class AccountRestServer implements AccountMediaTypes {
   }
 
   private void handleListAccountsHead(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    restServerHandler.changeLink(
-      "new",
-      ":accountNumber",
-      () -> accountManager.makeNewAccountNumber().value()
-    );
+    restServerHandler.changeLink(link -> {
+      if (link.relLink().rel().equalsIgnoreCase("new")) {
+        final String number = accountManager.makeNewAccountNumber().value();
+        return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
+      } else {
+        return link;
+      }
+    });
   }
 
   private void handleListAccounts(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
@@ -120,15 +124,10 @@ public class AccountRestServer implements AccountMediaTypes {
   }
 
   private void handleAccountHead(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    final String number = routingContext.pathParam("accountNumber");
-    List.of("delete", "edit-name", "deposit", "withdraw")
-      .forEach(rel ->
-        restServerHandler.changeLink(
-          rel,
-          ":accountNumber",
-          () -> number
-        )
-      );
+    restServerHandler.changeLink(link -> {
+      final String number = routingContext.pathParam("accountNumber");
+      return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
+    });
   }
 
   private void handleNewAccount(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {

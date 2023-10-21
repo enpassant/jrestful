@@ -1,5 +1,6 @@
 package jrestful.fp;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -33,5 +34,10 @@ public record Some<T>(T value) implements Option<T> {
   @Override
   public void ifPresent(final Consumer<T> handler) {
     handler.accept(value);
+  }
+
+  @Override
+  public Optional<T> toOptional() {
+    return Optional.of(value);
   }
 }

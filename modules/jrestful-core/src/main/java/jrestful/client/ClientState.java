@@ -76,7 +76,29 @@ public class ClientState<T> {
     }
   }
 
-  public Optional<Link> getLink(final String rel, final Map<Class<?>, String> classMediaTypeMap) {
+  public Optional<Link> getLink(
+    final String rel,
+    final Class<?> inClass,
+    final Class<?> outClass,
+    final Map<String, Class<?>> classMediaTypeMap
+  ) {
+    return links.stream()
+      .filter(link -> {
+        final RelLink relLink = link.relLink();
+        final boolean isRelEquals = relLink.rel().equalsIgnoreCase(rel);
+        final boolean isOutTypeMatch = getKnownMediaType(relLink.out(), classMediaTypeMap)
+          .map(clazz -> outClass.equals(Void.class) || clazz.equals(outClass))
+          .orElse(false);
+        final Boolean isInTypeMatch = relLink.in().toOptional().flatMap(
+            in -> getKnownMediaType(in, classMediaTypeMap)
+          ).map(clazz -> inClass.equals(Void.class) || clazz.equals(inClass))
+          .orElse(true);
+        return isRelEquals && isOutTypeMatch && isInTypeMatch;
+      })
+      .findAny();
+  }
+
+  public Optional<Link> getLink(final String rel, final Map<String, Class<?>> classMediaTypeMap) {
     return links.stream()
       .filter(link -> {
         final RelLink relLink = link.relLink();
@@ -89,7 +111,22 @@ public class ClientState<T> {
       .findAny();
   }
 
-  private boolean isKnownMediaType(final String mediaType, final Map<Class<?>, String> classMediaTypeMap) {
+  private Optional<Class<?>> getKnownMediaType(final String mediaType, final Map<String, Class<?>> classMediaTypeMap) {
+    final Pattern pattern = Pattern.compile("application/List\\[(\\w+)]");
+    final Matcher matcher = pattern.matcher(mediaType);
+
+    if (matcher.find()) {
+      final String mtName = "application/" + matcher.group(1) + "+json";
+      return Optional.ofNullable(
+        classMediaTypeMap.getOrDefault(mtName, null)
+      );
+    }
+    return Optional.ofNullable(
+      classMediaTypeMap.getOrDefault(mediaType, null)
+    );
+  }
+
+  private boolean isKnownMediaType(final String mediaType, final Map<String, Class<?>> classMediaTypeMap) {
     final Pattern pattern = Pattern.compile("application/List\\[(\\w+)]");
     final Matcher matcher = pattern.matcher(mediaType);
 

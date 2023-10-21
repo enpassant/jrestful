@@ -14,6 +14,7 @@ import jrestful.server.RestServerHandler;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -94,6 +95,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     response.putHeader("Link", linkStr);
   }
 
+  @Override
   public void changeLink(final String relName, final String param, final Supplier<String> value) {
     this.headerLinks = headerLinks.stream()
       .map(link -> {
@@ -104,5 +106,12 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
             link;
         }
       ).collect(Collectors.toList());
+  }
+
+  @Override
+  public void changeLink(final Function<Link, Link> fn) {
+    this.headerLinks = headerLinks.stream()
+      .map(fn)
+      .collect(Collectors.toList());
   }
 }

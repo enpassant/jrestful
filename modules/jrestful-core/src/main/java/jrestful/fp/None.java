@@ -1,5 +1,6 @@
 package jrestful.fp;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -32,5 +33,10 @@ public record None<T>() implements Option<T> {
 
   @Override
   public void ifPresent(final Consumer<T> handler) {
+  }
+
+  @Override
+  public Optional<T> toOptional() {
+    return Optional.empty();
   }
 }

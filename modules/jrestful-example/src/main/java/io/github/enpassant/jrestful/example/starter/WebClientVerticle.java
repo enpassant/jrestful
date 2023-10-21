@@ -28,13 +28,13 @@ public class WebClientVerticle extends AbstractVerticle {
 
     start = System.nanoTime();
 
-    final Map<Class<?>, String> classMediaTypeMap = new HashMap<>();
+    final Map<String, Class<?>> classMediaTypeMap = new HashMap<>();
 
-    classMediaTypeMap.put(Account.class, "application/Account+json");
-    classMediaTypeMap.put(Name.class, "application/Name+json");
-    classMediaTypeMap.put(ChangeName.class, "application/ChangeName+json");
-    classMediaTypeMap.put(Deposit.class, "application/Deposit+json");
-    classMediaTypeMap.put(Withdraw.class, "application/Withdraw+json");
+    classMediaTypeMap.put("application/Account+json", Account.class);
+    classMediaTypeMap.put("application/Name+json", Name.class);
+    classMediaTypeMap.put("application/ChangeName+json", ChangeName.class);
+    classMediaTypeMap.put("application/Deposit+json", Deposit.class);
+    classMediaTypeMap.put("application/Withdraw+json", Withdraw.class);
 
     final var getAdminToken = getToken("admin", "xxx");
     final var getUserToken = getToken("user", "xxx");
@@ -48,9 +48,9 @@ public class WebClientVerticle extends AbstractVerticle {
         .andThen(accountsState ->
           restClient.put(accountsState, "new", new Name("Teszt Elek"), Account.class)
             .andThen(newState ->
-              restClient.put(newState, "deposit", new Deposit(new AccountNumber("12345678-87654321"), 3200.0), Account.class)
+              restClient.put(newState, "edit", new Deposit(new AccountNumber("12345678-87654321"), 3200.0), Account.class)
                 .andThen(depositState ->
-                  restClient.put(newState, "withdraw", new Withdraw(new AccountNumber("12345678-87654321"), 1200.0), Account.class)
+                  restClient.put(newState, "edit", new Withdraw(new AccountNumber("12345678-87654321"), 1200.0), Account.class)
                 )
             ).andThen(newState ->
               restClient.delete(newState, "delete", Account.class)
@@ -61,12 +61,12 @@ public class WebClientVerticle extends AbstractVerticle {
             .andThen(accountsState ->
               restClient.put(accountsState, "new", new Name("Paprika Piroska"), Account.class)
                 .andThen(newState ->
-                  restClient.put(newState, "deposit", new Deposit(new AccountNumber("12345678-87654321"), 9200.0), Account.class)
+                  restClient.put(newState, "edit", new Deposit(new AccountNumber("12345678-87654321"), 9200.0), Account.class)
                     .andThen(depositState ->
-                      restClient.put(newState, "withdraw", new Withdraw(new AccountNumber("12345678-97654321"), 3400.0), Account.class)
+                      restClient.put(newState, "edit", new Withdraw(new AccountNumber("12345678-97654321"), 3400.0), Account.class)
                     )
                 ).andThen(newState ->
-                  restClient.put(newState, "edit-name", new ChangeName(new Name("Paprika Piroska"), new Name("Chiliné Piroska")), Account.class)
+                  restClient.put(newState, "edit", new ChangeName(new Name("Paprika Piroska"), new Name("Chiliné Piroska")), Account.class)
                 )
             )
         ).onComplete(cs -> logClientState(rootState), throwable -> logClientState(rootState))

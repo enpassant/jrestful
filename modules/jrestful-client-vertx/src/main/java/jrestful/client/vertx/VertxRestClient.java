@@ -29,7 +29,7 @@ public class VertxRestClient implements RestClient {
   private static final Logger LOGGER = Logger.getLogger(VertxRestClient.class.getName());
   private final WebClient webClient;
   private Supplier<String> getToken;
-  private Map<Class<?>, String> classMediaTypeMap;
+  private Map<String, Class<?>> classMediaTypeMap;
   private String entryPoint;
   private RestApi restApi;
   private String token;
@@ -42,7 +42,7 @@ public class VertxRestClient implements RestClient {
   public ClientResult<ClientState<RestApi>> init(
     final String entryPoint,
     final Supplier<String> getToken,
-    final Map<Class<?>, String> classMediaTypeMap
+    final Map<String, Class<?>> classMediaTypeMap
   ) {
     this.entryPoint = entryPoint;
     this.getToken = getToken;
@@ -51,7 +51,10 @@ public class VertxRestClient implements RestClient {
   }
 
   @Override
-  public ClientResult<ClientState<Void>> head(final ClientState<?> clientState, final String rel) {
+  public ClientResult<ClientState<Void>> head(
+    final ClientState<?> clientState,
+    final String rel
+  ) {
     return call(this::headMethod, clientState, rel, null, Void.class);
   }
 
@@ -107,7 +110,9 @@ public class VertxRestClient implements RestClient {
     final Class<T> responseClass
   ) {
     final Promise<ClientState<T>> promise = Promise.promise();
-    final Optional<Link> linkOptional = clientState.getLink(rel, classMediaTypeMap);
+//    final Optional<Link> linkOptional = clientState.getLink(rel, classMediaTypeMap);
+    final Class<?> inClass = content == null ? Void.class : content.getClass();
+    final Optional<Link> linkOptional = clientState.getLink(rel, inClass, responseClass, classMediaTypeMap);
     LOGGER.fine(() -> MessageFormat.format(
       "Call: {0}. responseClass: {1}, linkOptional: {2}",
       rel,

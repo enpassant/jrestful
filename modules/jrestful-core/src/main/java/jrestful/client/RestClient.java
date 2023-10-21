@@ -9,10 +9,13 @@ public interface RestClient {
   ClientResult<ClientState<RestApi>> init(
     final String entryPoint,
     final Supplier<String> getToken,
-    final Map<Class<?>, String> classMediaTypeMap
+    final Map<String, Class<?>> classMediaTypeMap
   );
 
-  ClientResult<ClientState<Void>> head(final ClientState<?> clientState, final String rel);
+  ClientResult<ClientState<Void>> head(
+    final ClientState<?> clientState,
+    final String rel
+  );
 
   <T> ClientResult<ClientState<T>> get(
     final ClientState<?> clientState,
