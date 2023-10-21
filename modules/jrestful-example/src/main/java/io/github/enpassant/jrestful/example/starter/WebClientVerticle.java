@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-public class WebClientVerticle extends AbstractVerticle {
+public class WebClientVerticle extends AbstractVerticle implements Relations {
   private static final Logger LOGGER = Logger.getLogger(WebClientVerticle.class.getName());
 
   private long start = System.nanoTime();
@@ -44,29 +44,29 @@ public class WebClientVerticle extends AbstractVerticle {
       restClient.init("http://localhost:8000", getAdminToken, classMediaTypeMap);
 
     initStateResult.andThen(rootState ->
-      restClient.head(rootState, "accounts")
+      restClient.head(rootState, REL_ACCOUNTS)
         .andThen(accountsState ->
-          restClient.put(accountsState, "new", new Name("Teszt Elek"), Account.class)
+          restClient.put(accountsState, REL_NEW, new Name("Teszt Elek"), Account.class)
             .andThen(newState ->
-              restClient.put(newState, "edit", new Deposit(new AccountNumber("12345678-87654321"), 3200.0), Account.class)
+              restClient.put(newState, REL_DEPOSIT, new Deposit(new AccountNumber("12345678-87654321"), 3200.0), Account.class)
                 .andThen(depositState ->
-                  restClient.put(newState, "edit", new Withdraw(new AccountNumber("12345678-87654321"), 1200.0), Account.class)
+                  restClient.put(newState, REL_WITHDRAW, new Withdraw(new AccountNumber("12345678-87654321"), 1200.0), Account.class)
                 )
             ).andThen(newState ->
-              restClient.delete(newState, "delete", Account.class)
+              restClient.delete(newState, REL_DELETE, Account.class)
             )
         )
         .andThen(r ->
-          restClient.head(rootState, "accounts")
+          restClient.head(rootState, REL_ACCOUNTS)
             .andThen(accountsState ->
-              restClient.put(accountsState, "new", new Name("Paprika Piroska"), Account.class)
+              restClient.put(accountsState, REL_NEW, new Name("Paprika Piroska"), Account.class)
                 .andThen(newState ->
-                  restClient.put(newState, "edit", new Deposit(new AccountNumber("12345678-87654321"), 9200.0), Account.class)
+                  restClient.put(newState, REL_DEPOSIT, new Deposit(new AccountNumber("12345678-87654321"), 9200.0), Account.class)
                     .andThen(depositState ->
-                      restClient.put(newState, "edit", new Withdraw(new AccountNumber("12345678-97654321"), 3400.0), Account.class)
+                      restClient.put(newState, REL_WITHDRAW, new Withdraw(new AccountNumber("12345678-97654321"), 3400.0), Account.class)
                     )
                 ).andThen(newState ->
-                  restClient.put(newState, "edit", new ChangeName(new Name("Paprika Piroska"), new Name("Chiliné Piroska")), Account.class)
+                  restClient.put(newState, REL_CHANGE_NAME, new ChangeName(new Name("Paprika Piroska"), new Name("Chiliné Piroska")), Account.class)
                 )
             )
         ).onComplete(cs -> logClientState(rootState), throwable -> logClientState(rootState))

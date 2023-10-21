@@ -21,7 +21,7 @@ import jrestful.type.Types;
 import java.util.List;
 import java.util.Optional;
 
-public class AccountRestServer implements AccountMediaTypes {
+public class AccountRestServer implements AccountMediaTypes, Relations {
 
   public static final String LIST_ACCOUNTS = "listAccounts";
   public static final String NEW_ACCOUNT = "newAccount";
@@ -87,13 +87,13 @@ public class AccountRestServer implements AccountMediaTypes {
     return new RestApi(
       types,
       restServer.apiTransition,
-      new Transition(LIST_ACCOUNTS, restServer.api, RelLink.get("accounts", APPLICATION_LIST_ACCOUNT_JSON)),
-      new Transition(NEW_ACCOUNT, accountList, RelLink.put("new", APPLICATION_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
-      new Transition(GET_ACCOUNT, accountList, RelLink.get("item", APPLICATION_ACCOUNT_JSON)),
-      new Transition(DELETE_ACCOUNT, account, RelLink.delete("delete", APPLICATION_ACCOUNT_JSON)),
-      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put("edit", APPLICATION_CHANGE_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
-      new Transition(DEPOSIT, account, RelLink.put("edit", APPLICATION_DEPOSIT_JSON, APPLICATION_ACCOUNT_JSON)),
-      new Transition(WITHDRAW, account, RelLink.put("edit", APPLICATION_WITHDRAW_JSON, APPLICATION_ACCOUNT_JSON))
+      new Transition(LIST_ACCOUNTS, restServer.api, RelLink.get(REL_ACCOUNTS, APPLICATION_LIST_ACCOUNT_JSON)),
+      new Transition(NEW_ACCOUNT, accountList, RelLink.put(REL_NEW, APPLICATION_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(GET_ACCOUNT, accountList, RelLink.get(REL_ITEM, APPLICATION_ACCOUNT_JSON)),
+      new Transition(DELETE_ACCOUNT, account, RelLink.delete(REL_DELETE, APPLICATION_ACCOUNT_JSON)),
+      new Transition(MODIFY_ACCOUNT_NAME, account, RelLink.put(REL_CHANGE_NAME, APPLICATION_CHANGE_NAME_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(DEPOSIT, account, RelLink.put(DEPOSIT, APPLICATION_DEPOSIT_JSON, APPLICATION_ACCOUNT_JSON)),
+      new Transition(WITHDRAW, account, RelLink.put(WITHDRAW, APPLICATION_WITHDRAW_JSON, APPLICATION_ACCOUNT_JSON))
     );
   }
 
@@ -109,7 +109,7 @@ public class AccountRestServer implements AccountMediaTypes {
 
   private void handleListAccountsHead(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
     restServerHandler.changeLink(link -> {
-      if (link.relLink().rel().equalsIgnoreCase("new")) {
+      if (link.relLink().rel().equalsIgnoreCase(REL_NEW)) {
         final String number = accountManager.makeNewAccountNumber().value();
         return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
       } else {

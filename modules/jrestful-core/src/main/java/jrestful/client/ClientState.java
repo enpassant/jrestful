@@ -98,19 +98,6 @@ public class ClientState<T> {
       .findAny();
   }
 
-  public Optional<Link> getLink(final String rel, final Map<String, Class<?>> classMediaTypeMap) {
-    return links.stream()
-      .filter(link -> {
-        final RelLink relLink = link.relLink();
-        final boolean isRelEquals = relLink.rel().equalsIgnoreCase(rel);
-        final boolean isOutTypeMatch = isKnownMediaType(relLink.out(), classMediaTypeMap);
-        final Boolean isInTypeMatch = relLink.in().map(in -> isKnownMediaType(in, classMediaTypeMap))
-          .orElse(true);
-        return isRelEquals && isOutTypeMatch && isInTypeMatch;
-      })
-      .findAny();
-  }
-
   private Optional<Class<?>> getKnownMediaType(final String mediaType, final Map<String, Class<?>> classMediaTypeMap) {
     final Pattern pattern = Pattern.compile("application/List\\[(\\w+)]");
     final Matcher matcher = pattern.matcher(mediaType);
@@ -124,25 +111,6 @@ public class ClientState<T> {
     return Optional.ofNullable(
       classMediaTypeMap.getOrDefault(mediaType, null)
     );
-  }
-
-  private boolean isKnownMediaType(final String mediaType, final Map<String, Class<?>> classMediaTypeMap) {
-    final Pattern pattern = Pattern.compile("application/List\\[(\\w+)]");
-    final Matcher matcher = pattern.matcher(mediaType);
-
-    if (matcher.find()) {
-      final String mtName = "application/" + matcher.group(1) + "+json";
-      return classMediaTypeMap.containsValue(mtName);
-    }
-    return classMediaTypeMap.containsValue(mediaType);
-  }
-
-  public List<Link> links() {
-    return links;
-  }
-
-  public T data() {
-    return data;
   }
 
   public List<Object> children() {
