@@ -1,9 +1,13 @@
 package jrestful.client;
 
 import jrestful.Context;
+import jrestful.Method;
 import jrestful.RestApi;
+import jrestful.fp.Some;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
+import jrestful.type.MediaType;
+import jrestful.type.TypeObject;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -43,12 +47,33 @@ public class ClientState<T> {
     final Context context,
     final String linkStr
   ) {
-    final String[] linkArr = linkStr.split(";\\s*");
-    if (linkArr.length < 2) return Optional.empty();
-    final String[] relArr = linkArr[1].split("=\\s*\"");
-    final int length = relArr[1].length();
-    final Optional<RelLink> link = restApi.getLink(context, relArr[1].substring(0, length - 1));
-    return link.map(relLink -> new Link(linkArr[0], relLink));
+    return parseLink(linkStr)
+      .flatMap(parsedLink ->
+        restApi.getLink(context, parsedLink.relLink().rel())
+          .map(relLink -> new Link(parsedLink.path(), relLink))
+      );
+  }
+
+  private static Optional<Link> parseLink(final String linkStr) {
+    final Pattern pattern = Pattern.compile(
+      "([^;]+);\\s*rel=\"([^;]+)\";\\s*method=\"([^;]+)\";\\s*type=\"([^;]*)\";\\s*accept=\"([^;]+)\""
+    );
+    final Matcher matcher = pattern.matcher(linkStr);
+    if (matcher.find()) {
+      return Optional.of(
+        new Link(
+          matcher.group(1),
+          new RelLink(
+            matcher.group(2),
+            Method.valueOf(matcher.group(3)),
+            new Some<>(new MediaType(matcher.group(4), new TypeObject<>("", ""))),
+            new MediaType(matcher.group(5), new TypeObject<>("", ""))
+          )
+        )
+      );
+    } else {
+      return Optional.empty();
+    }
   }
 
   public Optional<Link> getLink(final String rel, final Map<Class<?>, String> classMediaTypeMap) {
@@ -65,7 +90,7 @@ public class ClientState<T> {
   }
 
   private boolean isKnownMediaType(final String mediaType, final Map<Class<?>, String> classMediaTypeMap) {
-    final Pattern pattern = Pattern.compile("application/List\\[(\\w+)\\]");
+    final Pattern pattern = Pattern.compile("application/List\\[(\\w+)]");
     final Matcher matcher = pattern.matcher(mediaType);
 
     if (matcher.find()) {

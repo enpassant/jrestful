@@ -10,4 +10,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = MediaType.class, name = "MediaType")
 })
 public interface Type {
+  String name();
 }

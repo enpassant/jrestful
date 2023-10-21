@@ -16,7 +16,7 @@ public interface RestServer<T, A> {
 
   MediaType api = new MediaType(
     "application/RestAPI+json",
-    new TypeObject<>("RESTful API")
+    new TypeObject<>("RESTful API", "RESTful API")
   );
 
   Transition apiTransition = new Transition(API, new Root(), RelLink.get("", api));

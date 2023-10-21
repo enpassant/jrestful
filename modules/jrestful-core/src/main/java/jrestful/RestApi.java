@@ -2,6 +2,7 @@ package jrestful;
 
 import jrestful.link.RelLink;
 import jrestful.type.MediaType;
+import jrestful.type.Types;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record RestApi(Transition... transition) {
+public record RestApi(Types types, Transition... transition) {
   @Override
   public String toString() {
     return prettyPrint(0);
@@ -22,16 +23,10 @@ public record RestApi(Transition... transition) {
       .map(Objects::toString)
       .collect(Collectors.joining("\n    " + indent));
 
-    final String mediaTypes = Arrays.stream(transition)
-      .flatMap(t -> Stream.concat(t.relLink().in().stream(), Stream.of(t.relLink().out())))
-      .distinct()
-      .map(mediaType -> mediaType.prettyPrint(tab + 4))
-      .sorted()
-      .collect(Collectors.joining(",\n"));
+    final String mediaTypes = types.prettyPrint(tab + 2);
 
     return
       "\n" + indent + "RestApi: " +
-        "\n  " + indent + "MediaTypes:" +
         "\n" + mediaTypes +
         "\n\n  " + indent + "Transitions:" +
         "\n    " + indent + transitions +

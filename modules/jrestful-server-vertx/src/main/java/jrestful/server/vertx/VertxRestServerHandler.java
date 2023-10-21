@@ -89,7 +89,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   ) {
     final String linkStr = headerLinks.stream()
       .filter(link -> user == null || authorization.match(user))
-      .map(l -> l.path() + "; rel=\"" + l.relLink().rel() + "\"")
+      .map(Link::toWebLink)
       .collect(Collectors.joining(", "));
     response.putHeader("Link", linkStr);
   }

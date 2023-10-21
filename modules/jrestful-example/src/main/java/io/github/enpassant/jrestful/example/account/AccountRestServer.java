@@ -15,6 +15,7 @@ import jrestful.server.vertx.VertxRestServer;
 import jrestful.type.MediaType;
 import jrestful.type.TypeList;
 import jrestful.type.TypeObject;
+import jrestful.type.Types;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +56,7 @@ public class AccountRestServer implements AccountMediaTypes {
   protected RestApi createRestApi() {
     final var account = new MediaType(
       APPLICATION_ACCOUNT_JSON,
-      new TypeObject<>("Account(name: Name, number: AccountNumber, balance: Double)")
+      new TypeObject<>("Account", "(name: Name, number: AccountNumber, balance: Double)")
     );
     final var accountList = new MediaType(
       APPLICATION_LIST_ACCOUNT_JSON,
@@ -63,22 +64,27 @@ public class AccountRestServer implements AccountMediaTypes {
     );
     final var name = new MediaType(
       APPLICATION_NAME_JSON,
-      new TypeObject<>("Name(value: String[80])")
+      new TypeObject<>("Name", "(value: String[80])")
     );
     final var changeName = new MediaType(
       APPLICATION_CHANGE_NAME_JSON,
-      new TypeObject<>("ChangeName(currentName: Name, newName: Name)")
+      new TypeObject<>("ChangeName", "(currentName: Name, newName: Name)")
     );
     final var deposit = new MediaType(
       APPLICATION_DEPOSIT_JSON,
-      new TypeObject<>("Deposit(sourceAccount: AccountNumber, amount: Double)")
+      new TypeObject<>("Deposit", "(sourceAccount: AccountNumber, amount: Double)")
     );
     final var withdraw = new MediaType(
       APPLICATION_WITHDRAW_JSON,
-      new TypeObject<>("Withdraw(targetAccount: AccountNumber, amount: Double)")
+      new TypeObject<>("Withdraw", "(targetAccount: AccountNumber, amount: Double)")
+    );
+
+    final Types types = new Types(restServer.api, account, accountList, changeName, deposit, withdraw, name,
+      new TypeObject<>("AccountNumber", "(value: String[80]")
     );
 
     return new RestApi(
+      types,
       restServer.apiTransition,
       new Transition(LIST_ACCOUNTS, restServer.api, RelLink.get("accounts", accountList)),
       new Transition(NEW_ACCOUNT, accountList, RelLink.put("new", name, account)),

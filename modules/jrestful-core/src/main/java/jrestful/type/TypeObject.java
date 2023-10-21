@@ -1,8 +1,8 @@
 package jrestful.type;
 
-public record TypeObject<T>(T content) implements Type {
+public record TypeObject<T>(String name, T content) implements Type {
   @Override
   public String toString() {
-    return content.toString();
+    return name + content.toString();
   }
 }
