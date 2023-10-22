@@ -8,7 +8,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.RestApi;
 import jrestful.Transition;
-import jrestful.link.Link;
 import jrestful.link.RelLink;
 import jrestful.server.RequestContext;
 import jrestful.server.RestServer;
@@ -31,6 +30,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   public static final String MODIFY_ACCOUNT_NAME = "modifyAccountName";
   public static final String DEPOSIT = "deposit";
   public static final String WITHDRAW = "withdraw";
+  public static final String AUTH_ACCOUNT_PATH = "/auth/account";
 
   private final AccountManager accountManager;
   private final VertxAuthenticate vertxAuthenticate;
@@ -99,24 +99,18 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   }
 
   protected void buildHandlers(final RestServer<RoutingContext, Authorization> restServer) {
-    restServer.buildHandler(LIST_ACCOUNTS, "/auth/account", permissionUser, this::handleListAccountsHead, this::handleListAccounts);
-    restServer.buildHandler(NEW_ACCOUNT, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleNewAccount);
-    restServer.buildHandler(GET_ACCOUNT, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleGetAccount);
-    restServer.buildHandler(DELETE_ACCOUNT, "/auth/account/:accountNumber", permissionAdmin, this::handleAccountHead, this::handleDeleteAccount);
-    restServer.buildHandler(MODIFY_ACCOUNT_NAME, "/auth/account/:accountNumber", permissionAdmin, this::handleAccountHead, this::handleModifyAccountName);
-    restServer.buildHandler(DEPOSIT, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleDeposit);
-    restServer.buildHandler(WITHDRAW, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleWithdraw);
+    restServer.buildHandler(LIST_ACCOUNTS, AUTH_ACCOUNT_PATH, permissionUser, this::handleListAccountsHead, this::handleListAccounts);
+    restServer.buildHandler(NEW_ACCOUNT, AUTH_ACCOUNT_PATH, permissionUser, this::handleAccountHead, this::handleNewAccount);
+    restServer.buildHandler(GET_ACCOUNT, AUTH_ACCOUNT_PATH, permissionUser, this::handleAccountHead, this::handleGetAccount);
+    restServer.buildHandler(DELETE_ACCOUNT, AUTH_ACCOUNT_PATH, permissionAdmin, this::handleAccountHead, this::handleDeleteAccount);
+    restServer.buildHandler(MODIFY_ACCOUNT_NAME, AUTH_ACCOUNT_PATH, permissionAdmin, this::handleAccountHead, this::handleModifyAccountName);
+    restServer.buildHandler(DEPOSIT, AUTH_ACCOUNT_PATH, permissionUser, this::handleAccountHead, this::handleDeposit);
+    restServer.buildHandler(WITHDRAW, AUTH_ACCOUNT_PATH, permissionUser, this::handleAccountHead, this::handleWithdraw);
   }
 
   private void handleListAccountsHead(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
-    restServerHandler.changeLink(link -> {
-      if (link.relLink().rel().equalsIgnoreCase(REL_NEW)) {
-        final String number = accountManager.makeNewAccountNumber().value();
-        return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
-      } else {
-        return link;
-      }
-    });
+    final String number = accountManager.makeNewAccountNumber().value();
+    requestContext.addQueryParameter("accountNumber", number);
   }
 
   private void handleListAccounts(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
@@ -125,15 +119,13 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   }
 
   private void handleAccountHead(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
-    restServerHandler.changeLink(link -> {
-      final String number = requestContext.getContext().pathParam("accountNumber");
-      return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
-    });
+    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+    requestContext.addQueryParameter("accountNumber", number);
   }
 
   private void handleNewAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServer.parseBodyAs(requestContext, Name.class).ifPresent(name -> {
-      final String number = requestContext.getContext().pathParam("accountNumber");
+      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
       final AccountNumber accountNumber = new AccountNumber(number);
       final Account addedAccount = accountManager.addAccount(accountNumber, name);
       final HttpServerResponse response = requestContext.getContext().response();
@@ -147,7 +139,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   }
 
   private void handleGetAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
-    final String number = requestContext.getContext().pathParam("accountNumber");
+    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.getAccount(accountNumber);
     if (accountOptional.isPresent()) {
@@ -160,7 +152,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   }
 
   private void handleDeleteAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
-    final String number = requestContext.getContext().pathParam("accountNumber");
+    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.deleteAccount(accountNumber);
     if (accountOptional.isPresent()) {
@@ -174,7 +166,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
 
   private void handleModifyAccountName(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServer.parseBodyAs(requestContext, ChangeName.class).ifPresent(changeName -> {
-      final String number = requestContext.getContext().pathParam("accountNumber");
+      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.modifyAccountName(accountNumber, changeName);
@@ -190,7 +182,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
 
   private void handleDeposit(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServer.parseBodyAs(requestContext, Deposit.class).ifPresent(deposit -> {
-      final String number = requestContext.getContext().pathParam("accountNumber");
+      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.deposit(accountNumber, deposit);
@@ -206,7 +198,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
 
   private void handleWithdraw(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServer.parseBodyAs(requestContext, Withdraw.class).ifPresent(withdraw -> {
-      final String number = requestContext.getContext().pathParam("accountNumber");
+      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.withdraw(accountNumber, withdraw);
