@@ -13,6 +13,7 @@ import jrestful.client.vertx.VertxRestClient;
 import java.text.MessageFormat;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -24,6 +25,12 @@ public class WebClientVerticle extends AbstractVerticle implements Relations {
 
   @Override
   public void start(final Promise<Void> startPromise) {
+    final ClientResult<ClientState<Account>> clientStateFuture = runLongExample()
+      .andThen(result -> runSagaExample());
+    clientStateFuture.onComplete(result -> startPromise.complete(), throwable -> startPromise.complete());
+  }
+
+  private ClientResult<ClientState<Account>> runLongExample() {
     final WebClient webClient = WebClient.create(vertx);
 
     start = System.nanoTime();
@@ -40,10 +47,10 @@ public class WebClientVerticle extends AbstractVerticle implements Relations {
     final var getUserToken = getToken("user", "xxx");
 
     final RestClient restClient = new VertxRestClient(webClient);
-    final ClientResult<ClientState<RestApi>> initStateResult =
+    final ClientResult<ClientState<RestApi>> initStateResultOTP =
       restClient.init("http://localhost:8000", getAdminToken, classMediaTypeMap);
 
-    initStateResult.andThen(rootState ->
+    return initStateResultOTP.andThen(rootState ->
       restClient.head(rootState, REL_ACCOUNTS)
         .andThen(accountsState ->
           restClient.put(accountsState, REL_NEW, new Name("Teszt Elek"), Account.class)
@@ -71,6 +78,63 @@ public class WebClientVerticle extends AbstractVerticle implements Relations {
             )
         ).onComplete(cs -> logClientState(rootState), throwable -> logClientState(rootState))
     ).onFailure(this::handleError);
+  }
+
+  private ClientResult<ClientState<Account>> runSagaExample() {
+    final WebClient webClient = WebClient.create(vertx);
+
+    start = System.nanoTime();
+
+    final Map<String, Class<?>> classMediaTypeMap = new HashMap<>();
+
+    classMediaTypeMap.put("application/Account+json", Account.class);
+    classMediaTypeMap.put("application/Name+json", Name.class);
+    classMediaTypeMap.put("application/ChangeName+json", ChangeName.class);
+    classMediaTypeMap.put("application/Deposit+json", Deposit.class);
+    classMediaTypeMap.put("application/Withdraw+json", Withdraw.class);
+
+    final var getAdminToken = getToken("admin", "xxx");
+    final var getUserToken = getToken("user", "xxx");
+
+    final RestClient restClient = new VertxRestClient(webClient);
+    final ClientState<String> rootState = new ClientState<>("", List.of(), "RootState");
+
+    final ClientResult<ClientState<RestApi>> initStateResultOTP =
+      restClient.init("http://localhost:8000", getAdminToken, classMediaTypeMap);
+    final ClientResult<ClientState<RestApi>> initStateResultCIB =
+      restClient.init("http://localhost:8100", getAdminToken, classMediaTypeMap);
+
+    return initStateResultOTP.join(initStateResultCIB).andThen(tuple -> {
+      final ClientState<RestApi> rootStateOTP = tuple.getFirst();
+      final ClientState<RestApi> rootStateCIB = tuple.getSecond();
+
+      rootState.children().add(rootStateOTP);
+      rootState.children().add(rootStateCIB);
+
+      final double amount = 3200.0;
+
+      return restClient.head(rootStateOTP, REL_ACCOUNTS)
+        .andThen(accountsStateOTP ->
+          restClient.head(rootStateCIB, REL_ACCOUNTS)
+            .andThen(accountsStateCIB ->
+              restClient.put(accountsStateOTP, REL_NEW, new Name("Teszt Elek"), Account.class)
+                .andThen(newStateOTP -> {
+                  final Account accountOTP = newStateOTP.getData();
+                  return restClient.put(accountsStateCIB, REL_NEW, new Name("Paprika Piroska"), Account.class)
+                    .andThen(newStateCIB -> {
+                      final Account accountCIB = newStateCIB.getData();
+                      return restClient.put(newStateOTP, REL_DEPOSIT, new Deposit(accountCIB.accountNumber(), amount), Account.class)
+                        .andThen(depositStateOTP ->
+                          restClient.put(newStateCIB, REL_WITHDRAW, new Withdraw(accountOTP.accountNumber(), amount), Account.class)
+                        ).recover(throwable ->
+                          restClient.put(newStateOTP, REL_WITHDRAW, new Withdraw(accountCIB.accountNumber(), amount), Account.class)
+                        );
+                    })
+                    .onSuccess(newStateCIB -> logClientState(rootState));
+                })
+            )
+        );
+    });
   }
 
   private <T> void logClientState(final ClientState<T> clientState) {

@@ -1,5 +1,7 @@
 package io.github.enpassant.jrestful.example.account;
 
+import io.vertx.ext.web.handler.HttpException;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,10 +69,14 @@ public class AccountManager {
   public Optional<Account> withdraw(final AccountNumber accountNumber, final Withdraw withdraw) {
     if (accountMap.containsKey(accountNumber)) {
       final Account account = accountMap.get(accountNumber);
+      final double balance = account.balance() - withdraw.amount();
+      if (balance < 0.0) {
+        throw new HttpException(400, "Withdraw is not possible because the balance would be negative");
+      }
       final Account modifiedAccount = new Account(
         account.name(),
         accountNumber,
-        account.balance() - withdraw.amount()
+        balance
       );
       accountMap.put(accountNumber, modifiedAccount);
       return Optional.of(modifiedAccount);

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public interface RestClient {
+  <T> ClientResult<T> succeeded(T result);
+
   ClientResult<ClientState<RestApi>> init(
     final String entryPoint,
     final Supplier<String> getToken,

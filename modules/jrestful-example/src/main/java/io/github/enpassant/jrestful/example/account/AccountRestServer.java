@@ -98,7 +98,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   }
 
   protected void buildHandlers(final RestServer<RoutingContext, Authorization> restServer) {
-    restServer.buildHandler(LIST_ACCOUNTS, "/auth/accounts", permissionUser, this::handleListAccountsHead, this::handleListAccounts);
+    restServer.buildHandler(LIST_ACCOUNTS, "/auth/account", permissionUser, this::handleListAccountsHead, this::handleListAccounts);
     restServer.buildHandler(NEW_ACCOUNT, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleNewAccount);
     restServer.buildHandler(GET_ACCOUNT, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleGetAccount);
     restServer.buildHandler(DELETE_ACCOUNT, "/auth/account/:accountNumber", permissionAdmin, this::handleAccountHead, this::handleDeleteAccount);

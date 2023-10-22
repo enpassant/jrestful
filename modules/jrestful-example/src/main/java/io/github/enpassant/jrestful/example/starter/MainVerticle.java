@@ -1,14 +1,12 @@
 package io.github.enpassant.jrestful.example.starter;
 
-import io.github.enpassant.jrestful.example.account.AccountManager;
-import io.github.enpassant.jrestful.example.account.AccountRestServer;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
-import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.Router;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.handler.HttpException;
 
 import java.text.MessageFormat;
 import java.util.logging.Logger;
@@ -18,30 +16,23 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(final Promise<Void> startPromise) {
-    final HttpServer server = vertx.createHttpServer();
-    final Router router = Router.router(vertx);
+    final RestServerVerticle restServerVerticleOTP = new RestServerVerticle();
+    final Future<String> futureOTP = vertx.deployVerticle(restServerVerticleOTP);
 
-    final AccountManager accountManager = new AccountManager();
-    final VertxAuthenticate vertxAuthenticate = new VertxAuthenticate(vertx);
-    final JWTAuth jwtAuth = vertxAuthenticate.getJwtAuth();
-    final ChainAuthHandler authHandler = ChainAuthHandler.any();
+    final RestServerVerticle restServerVerticleCIB = new RestServerVerticle();
+    final JsonObject configCIB = new JsonObject().put("port", 8100);
+    final DeploymentOptions deploymentOptionsCIB = new DeploymentOptions().setConfig(configCIB);
+    final Future<String> futureCIB = vertx.deployVerticle(restServerVerticleCIB, deploymentOptionsCIB);
 
-    authHandler.add(BasicAuthHandler.create(vertxAuthenticate));
-    authHandler.add(JWTAuthHandler.create(jwtAuth));
-
-    router.route("/auth/*").handler(authHandler);
-    router.route("/auth/*").failureHandler(this::handleFailure);
-
-    router.route().handler(BodyHandler.create());
-
-    final AccountRestServer accountRestServer =
-      new AccountRestServer(router, accountManager, vertxAuthenticate);
-
-    server.requestHandler(router);
-    server.listen(8000);
-
-    final WebClientVerticle webClientVerticle = new WebClientVerticle();
-    vertx.deployVerticle(webClientVerticle);
+    Future.all(futureOTP, futureCIB).compose(compositeFuture -> {
+      final WebClientVerticle webClientVerticle = new WebClientVerticle();
+      return vertx.deployVerticle(webClientVerticle);
+    }).onComplete(result -> {
+      startPromise.complete();
+      if (!System.getProperty("shutdown.when.complete", "").isBlank()) {
+        vertx.close();
+      }
+    });
   }
 
   private void handleFailure(final RoutingContext routingContext) {

@@ -26,4 +26,6 @@ public interface ClientResult<T> {
   <R> ClientResult<Tuple2<T, R>> join(ClientResult<R> that);
 
   ClientResult<T> handle(Consumer<ClientResult<T>> handler);
+
+  T result();
 }

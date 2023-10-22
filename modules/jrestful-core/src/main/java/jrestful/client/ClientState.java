@@ -117,6 +117,10 @@ public class ClientState<T> {
     return children;
   }
 
+  public T getData() {
+    return data;
+  }
+
   @Override
   public String toString() {
     return prettyPrint(0);

@@ -39,6 +39,11 @@ public class VertxRestClient implements RestClient {
   }
 
   @Override
+  public <T> ClientResult<T> succeeded(final T result) {
+    return new VertxClientResult<>(Future.succeededFuture(result));
+  }
+
+  @Override
   public ClientResult<ClientState<RestApi>> init(
     final String entryPoint,
     final Supplier<String> getToken,

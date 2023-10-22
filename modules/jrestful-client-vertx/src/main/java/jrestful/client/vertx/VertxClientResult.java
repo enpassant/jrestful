@@ -36,6 +36,15 @@ public class VertxClientResult<T> implements ClientResult<T> {
   }
 
   @Override
+  public ClientResult<T> recover(final Function<Throwable, ClientResult<T>> fn) {
+    final Future<T> composedFuture = future.recover(t -> {
+      final VertxClientResult<T> result = (VertxClientResult<T>) fn.apply(t);
+      return result.future;
+    });
+    return new VertxClientResult<>(composedFuture);
+  }
+
+  @Override
   public <R> ClientResult<Tuple2<T, R>> join(final ClientResult<R> that) {
     final VertxClientResult<R> thatResult = (VertxClientResult<R>) that;
     return new VertxClientResult<>(
@@ -48,5 +57,10 @@ public class VertxClientResult<T> implements ClientResult<T> {
   public ClientResult<T> handle(final Consumer<ClientResult<T>> handler) {
     handler.accept(this);
     return this;
+  }
+
+  @Override
+  public T result() {
+    return future.result();
   }
 }
