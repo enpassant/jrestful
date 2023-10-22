@@ -74,6 +74,9 @@ public class WebClientVerticle extends AbstractVerticle implements Relations {
                     )
                 ).andThen(newState ->
                   restClient.put(newState, REL_CHANGE_NAME, new ChangeName(new Name("Paprika Piroska"), new Name("Chiliné Piroska")), Account.class)
+                    .recover(throwable ->
+                      restClient.put(newState, REL_CHANGE_NAME, new Name("Chiliné Piroska"), Account.class)
+                    )
                 )
             )
         ).onComplete(cs -> logClientState(rootState), throwable -> logClientState(rootState))

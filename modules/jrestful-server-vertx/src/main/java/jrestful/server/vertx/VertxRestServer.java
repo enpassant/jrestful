@@ -124,8 +124,8 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
       this,
       contentType,
       relLink.rel(),
-      authorization
-    );
+      authorization,
+      transition);
     router.route(httpMethod, path)
       .consumes(relLink.in().orElse("*/*"))
       .produces(contentType)

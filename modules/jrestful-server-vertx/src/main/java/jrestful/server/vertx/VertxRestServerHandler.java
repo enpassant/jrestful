@@ -7,6 +7,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authorization.Authorization;
 import io.vertx.ext.web.RoutingContext;
+import jrestful.Transition;
 import jrestful.link.Link;
 import jrestful.server.RequestContext;
 import jrestful.server.RestServerHandler;
@@ -23,6 +24,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   private final String contentType;
   private final String rel;
   private final Authorization authorization;
+  private final Transition transition;
 
   private List<Link> headerLinks = List.of();
 
@@ -36,12 +38,14 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     final VertxRestServer vertxRestServer,
     final String contentType,
     final String rel,
-    final Authorization authorization
+    final Authorization authorization,
+    final Transition transition
   ) {
     this.vertxRestServer = vertxRestServer;
     this.contentType = contentType;
     this.rel = rel;
     this.authorization = authorization;
+    this.transition = transition;
   }
 
   public RestServerHandler<RoutingContext> setProcessHead(final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> processHead) {
@@ -90,7 +94,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   ) {
     final String linkStr = headerLinks.stream()
       .filter(link -> user == null || authorization.match(user))
-      .map(link -> link.toWebLink(requestContext.qetQueryString()))
+      .map(link -> link.toWebLink(requestContext.qetQueryString(link.relLink().rel())))
       .collect(Collectors.joining(", "));
     response.putHeader("Link", linkStr);
   }

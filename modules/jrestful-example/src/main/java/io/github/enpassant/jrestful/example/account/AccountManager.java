@@ -38,7 +38,17 @@ public class AccountManager {
     }
   }
 
-  public Optional<Account> modifyAccountName(final AccountNumber accountNumber, final ChangeName changeName) {
+  public Optional<Account> modifyAccountName(final AccountNumber accountNumber, final Name name) {
+    if (accountMap.containsKey(accountNumber)) {
+      final Account account = accountMap.get(accountNumber);
+      final Account modifiedAccount = new Account(name, accountNumber, account.balance());
+      accountMap.put(accountNumber, modifiedAccount);
+      return Optional.of(modifiedAccount);
+    }
+    return Optional.empty();
+  }
+
+  public Optional<Account> modifyAccountName2(final AccountNumber accountNumber, final ChangeName changeName) {
     if (accountMap.containsKey(accountNumber)) {
       final Account account = accountMap.get(accountNumber);
       if (account.name().equals(changeName.currentName())) {
