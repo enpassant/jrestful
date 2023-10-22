@@ -13,6 +13,8 @@ public interface ClientResult<T> {
 
   <R> ClientResult<R> andThen(Function<T, ClientResult<R>> fn);
 
+  ClientResult<T> recover(Function<Throwable, ClientResult<T>> fn);
+
   default ClientResult<T> onComplete(
     final Consumer<T> successHandler,
     final Consumer<Throwable> failureHandler
