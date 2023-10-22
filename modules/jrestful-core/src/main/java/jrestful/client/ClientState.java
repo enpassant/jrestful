@@ -89,10 +89,11 @@ public class ClientState<T> {
         final boolean isOutTypeMatch = getKnownMediaType(relLink.out(), classMediaTypeMap)
           .map(clazz -> outClass.equals(Void.class) || clazz.equals(outClass))
           .orElse(false);
-        final Boolean isInTypeMatch = relLink.in().toOptional().flatMap(
+        final Optional<String> inOptional = relLink.in().toOptional();
+        final Boolean isInTypeMatch = inOptional.isEmpty() || inOptional.flatMap(
             in -> getKnownMediaType(in, classMediaTypeMap)
           ).map(clazz -> inClass.equals(Void.class) || clazz.equals(inClass))
-          .orElse(true);
+          .orElse(false);
         return isRelEquals && isOutTypeMatch && isInTypeMatch;
       })
       .findAny();

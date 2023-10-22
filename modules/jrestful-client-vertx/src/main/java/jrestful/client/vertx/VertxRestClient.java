@@ -118,11 +118,12 @@ public class VertxRestClient implements RestClient {
 //    final Optional<Link> linkOptional = clientState.getLink(rel, classMediaTypeMap);
     final Class<?> inClass = content == null ? Void.class : content.getClass();
     final Optional<Link> linkOptional = clientState.getLink(rel, inClass, responseClass, classMediaTypeMap);
-    LOGGER.fine(() -> MessageFormat.format(
-      "Call: {0}. responseClass: {1}, linkOptional: {2}",
+    LOGGER.info(() -> MessageFormat.format(
+      "Request: {0}. link: {3}, content: {1}, responseClass: {2}",
       rel,
-      responseClass,
-      linkOptional
+      content,
+      responseClass.getSimpleName(),
+      linkOptional.map(Link::path).orElse("[Not found]")
     ));
 
     if (linkOptional.isEmpty()) {
