@@ -28,16 +28,16 @@ public interface RestServer<T, A> {
     final String transitionName,
     final String path,
     final A authorization,
-    final BiConsumer<RestServerHandler<T>, T> process
+    final BiConsumer<RestServerHandler<T>, RequestContext<T>> process
   );
 
   void buildHandler(
     final String transitionName,
     final String path,
     final A authorization,
-    final BiConsumer<RestServerHandler<T>, T> processHead,
-    final BiConsumer<RestServerHandler<T>, T> process
+    final BiConsumer<RestServerHandler<T>, RequestContext<T>> processHead,
+    final BiConsumer<RestServerHandler<T>, RequestContext<T>> process
   );
 
-  <R> Optional<R> parseBodyAs(final T routingContext, final Class<R> clazz);
+  <R> Optional<R> parseBodyAs(final RequestContext<T> requestContext, final Class<R> clazz);
 }

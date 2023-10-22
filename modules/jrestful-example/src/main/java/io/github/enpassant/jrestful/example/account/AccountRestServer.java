@@ -10,6 +10,7 @@ import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
+import jrestful.server.RequestContext;
 import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
 import jrestful.server.vertx.VertxRestServer;
@@ -107,7 +108,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     restServer.buildHandler(WITHDRAW, "/auth/account/:accountNumber", permissionUser, this::handleAccountHead, this::handleWithdraw);
   }
 
-  private void handleListAccountsHead(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
+  private void handleListAccountsHead(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServerHandler.changeLink(link -> {
       if (link.relLink().rel().equalsIgnoreCase(REL_NEW)) {
         final String number = accountManager.makeNewAccountNumber().value();
@@ -118,102 +119,102 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     });
   }
 
-  private void handleListAccounts(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
+  private void handleListAccounts(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     final List<Account> accounts = accountManager.findAll();
-    routingContext.json(accounts);
+    requestContext.getContext().json(accounts);
   }
 
-  private void handleAccountHead(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
+  private void handleAccountHead(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
     restServerHandler.changeLink(link -> {
-      final String number = routingContext.pathParam("accountNumber");
+      final String number = requestContext.getContext().pathParam("accountNumber");
       return new Link(link.path().replaceAll(":accountNumber", number), link.relLink());
     });
   }
 
-  private void handleNewAccount(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    restServer.parseBodyAs(routingContext, Name.class).ifPresent(name -> {
-      final String number = routingContext.pathParam("accountNumber");
+  private void handleNewAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    restServer.parseBodyAs(requestContext, Name.class).ifPresent(name -> {
+      final String number = requestContext.getContext().pathParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Account addedAccount = accountManager.addAccount(accountNumber, name);
-      final HttpServerResponse response = routingContext.response();
+      final HttpServerResponse response = requestContext.getContext().response();
       if (addedAccount.name().equals(name)) {
         response.setStatusCode(201);
-        routingContext.json(addedAccount);
+        requestContext.getContext().json(addedAccount);
       } else {
         response.setStatusCode(409).end("Conflict");
       }
     });
   }
 
-  private void handleGetAccount(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    final String number = routingContext.pathParam("accountNumber");
+  private void handleGetAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    final String number = requestContext.getContext().pathParam("accountNumber");
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.getAccount(accountNumber);
     if (accountOptional.isPresent()) {
       final Account account = accountOptional.get();
-      routingContext.json(account);
+      requestContext.getContext().json(account);
     } else {
-      final HttpServerResponse response = routingContext.response();
+      final HttpServerResponse response = requestContext.getContext().response();
       response.setStatusCode(404).end("Not found");
     }
   }
 
-  private void handleDeleteAccount(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    final String number = routingContext.pathParam("accountNumber");
+  private void handleDeleteAccount(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    final String number = requestContext.getContext().pathParam("accountNumber");
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.deleteAccount(accountNumber);
     if (accountOptional.isPresent()) {
       final Account account = accountOptional.get();
-      routingContext.json(account);
+      requestContext.getContext().json(account);
     } else {
-      final HttpServerResponse response = routingContext.response();
+      final HttpServerResponse response = requestContext.getContext().response();
       response.setStatusCode(404).end("Not found");
     }
   }
 
-  private void handleModifyAccountName(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    restServer.parseBodyAs(routingContext, ChangeName.class).ifPresent(changeName -> {
-      final String number = routingContext.pathParam("accountNumber");
+  private void handleModifyAccountName(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    restServer.parseBodyAs(requestContext, ChangeName.class).ifPresent(changeName -> {
+      final String number = requestContext.getContext().pathParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.modifyAccountName(accountNumber, changeName);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        routingContext.json(account);
+        requestContext.getContext().json(account);
       } else {
-        final HttpServerResponse response = routingContext.response();
+        final HttpServerResponse response = requestContext.getContext().response();
         response.setStatusCode(404).end("Not found");
       }
     });
   }
 
-  private void handleDeposit(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    restServer.parseBodyAs(routingContext, Deposit.class).ifPresent(deposit -> {
-      final String number = routingContext.pathParam("accountNumber");
+  private void handleDeposit(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    restServer.parseBodyAs(requestContext, Deposit.class).ifPresent(deposit -> {
+      final String number = requestContext.getContext().pathParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.deposit(accountNumber, deposit);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        routingContext.json(account);
+        requestContext.getContext().json(account);
       } else {
-        final HttpServerResponse response = routingContext.response();
+        final HttpServerResponse response = requestContext.getContext().response();
         response.setStatusCode(404).end("Not found");
       }
     });
   }
 
-  private void handleWithdraw(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    restServer.parseBodyAs(routingContext, Withdraw.class).ifPresent(withdraw -> {
-      final String number = routingContext.pathParam("accountNumber");
+  private void handleWithdraw(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    restServer.parseBodyAs(requestContext, Withdraw.class).ifPresent(withdraw -> {
+      final String number = requestContext.getContext().pathParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.withdraw(accountNumber, withdraw);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        routingContext.json(account);
+        requestContext.getContext().json(account);
       } else {
-        final HttpServerResponse response = routingContext.response();
+        final HttpServerResponse response = requestContext.getContext().response();
         response.setStatusCode(404).end("Not found");
       }
     });

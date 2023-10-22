@@ -12,12 +12,14 @@ import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
+import jrestful.server.RequestContext;
 import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class VertxRestServer implements RestServer<RoutingContext, Authorization> {
 
@@ -25,6 +27,8 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
   protected final Router router;
 
   private final Map<String, List<Link>> mediaTypeLinks = new HashMap<>();
+  private Map<String, List<Transition>> mediaTypeTransitions = new HashMap<>();
+  private final Map<String, String> transitionPaths = new HashMap<>();
 
   public VertxRestServer(final Router router) {
     this.router = router;
@@ -35,6 +39,9 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final Consumer<RestServer<RoutingContext, Authorization>> buildHandlers
   ) {
     this.restApi = restApi;
+
+    this.mediaTypeTransitions = Arrays.stream(restApi.transition())
+      .collect(Collectors.groupingBy(transition -> transition.context().name()));
 
     buildHandler(API, "/", permissionAll(), this::handleApi);
     buildHandlers.accept(this);
@@ -54,15 +61,15 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     };
   }
 
-  protected void handleApi(final RestServerHandler<RoutingContext> restServerHandler, final RoutingContext routingContext) {
-    routingContext.json(restApi);
+  protected void handleApi(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+    requestContext.getContext().json(restApi);
   }
 
   public void buildHandler(
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> process
+    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)
@@ -74,8 +81,8 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> processHead,
-    final BiConsumer<RestServerHandler<RoutingContext>, RoutingContext> process
+    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> processHead,
+    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)
@@ -84,12 +91,12 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     );
   }
 
-  public <T> Optional<T> parseBodyAs(final RoutingContext routingContext, final Class<T> clazz) {
+  public <T> Optional<T> parseBodyAs(final RequestContext<RoutingContext> requestContext, final Class<T> clazz) {
     try {
-      final JsonObject jsonObject = routingContext.body().asJsonObject();
+      final JsonObject jsonObject = requestContext.getContext().body().asJsonObject();
       return Optional.of(jsonObject.mapTo(clazz));
     } catch (final Exception e) {
-      final HttpServerResponse response = routingContext.response();
+      final HttpServerResponse response = requestContext.getContext().response();
       response.setStatusCode(400).end("Malformed syntax: " + clazz.getSimpleName());
       return Optional.empty();
     }
@@ -111,6 +118,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
       new ArrayList<>()
     );
     links.add(link);
+    transitionPaths.put(transition.name(), path);
     mediaTypeLinks.putIfAbsent(contextName, links);
     final VertxRestServerHandler handler = new VertxRestServerHandler(
       this,
@@ -132,10 +140,16 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
   }
 
   public List<Link> getLinks(final String contentType) {
-    return mediaTypeLinks.getOrDefault(
-      contentType,
-      List.of()
-    );
+    return mediaTypeTransitions.getOrDefault(
+        contentType,
+        List.of()
+      ).stream()
+      .map(transition -> new Link(transitionPaths.get(transition.name()), transition.relLink()))
+      .collect(Collectors.toList());
+//    return mediaTypeLinks.getOrDefault(
+//      contentType,
+//      List.of()
+//    );
   }
 
   private HttpMethod convertMethod(final Method method) {

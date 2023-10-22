@@ -8,9 +8,9 @@ import java.util.function.Supplier;
 
 public interface RestServerHandler<T> {
 
-  RestServerHandler<T> setProcessHead(final BiConsumer<RestServerHandler<T>, T> processHead);
+  RestServerHandler<T> setProcessHead(final BiConsumer<RestServerHandler<T>, RequestContext<T>> processHead);
 
-  RestServerHandler<T> setProcess(final BiConsumer<RestServerHandler<T>, T> process);
+  RestServerHandler<T> setProcess(final BiConsumer<RestServerHandler<T>, RequestContext<T>> process);
 
   void changeLink(final String relName, final String param, final Supplier<String> value);
 
