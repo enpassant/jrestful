@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class RequestContext<T> {
+public abstract class RequestContext<T> {
   private final T context;
 
   private final Map<String, List<String>> queryParameterMap = new LinkedHashMap<>();

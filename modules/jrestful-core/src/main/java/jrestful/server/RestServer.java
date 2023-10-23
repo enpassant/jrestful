@@ -8,7 +8,6 @@ import jrestful.type.MediaType;
 import jrestful.type.TypeObject;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface RestServer<T, A> {
@@ -28,15 +27,15 @@ public interface RestServer<T, A> {
     final String transitionName,
     final String path,
     final A authorization,
-    final BiConsumer<RestServerHandler<T>, RequestContext<T>> process
+    final Consumer<RequestContext<T>> process
   );
 
   void buildHandler(
     final String transitionName,
     final String path,
     final A authorization,
-    final BiConsumer<RestServerHandler<T>, RequestContext<T>> processHead,
-    final BiConsumer<RestServerHandler<T>, RequestContext<T>> process
+    final Consumer<RequestContext<T>> processHead,
+    final Consumer<RequestContext<T>> process
   );
 
   <R> Optional<R> parseBodyAs(final RequestContext<T> requestContext, final Class<R> clazz);

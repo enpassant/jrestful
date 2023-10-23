@@ -17,7 +17,6 @@ import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -61,7 +60,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     };
   }
 
-  protected void handleApi(final RestServerHandler<RoutingContext> restServerHandler, final RequestContext<RoutingContext> requestContext) {
+  protected void handleApi(final RequestContext<RoutingContext> requestContext) {
     requestContext.getContext().json(restApi);
   }
 
@@ -69,7 +68,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process
+    final Consumer<RequestContext<RoutingContext>> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)
@@ -81,8 +80,8 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> processHead,
-    final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process
+    final Consumer<RequestContext<RoutingContext>> processHead,
+    final Consumer<RequestContext<RoutingContext>> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)

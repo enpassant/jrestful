@@ -14,7 +14,7 @@ import jrestful.server.RestServerHandler;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -28,11 +28,10 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
 
   private List<Link> headerLinks = List.of();
 
-  private BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> processHead =
-    (restHandler, routingContext) -> {
-    };
+  private Consumer<RequestContext<RoutingContext>> processHead = (routingContext) -> {
+  };
 
-  private BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process;
+  private Consumer<RequestContext<RoutingContext>> process;
 
   public VertxRestServerHandler(
     final VertxRestServer vertxRestServer,
@@ -48,12 +47,12 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     this.transition = transition;
   }
 
-  public RestServerHandler<RoutingContext> setProcessHead(final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> processHead) {
+  public RestServerHandler<RoutingContext> setProcessHead(final Consumer<RequestContext<RoutingContext>> processHead) {
     this.processHead = processHead;
     return this;
   }
 
-  public RestServerHandler<RoutingContext> setProcess(final BiConsumer<RestServerHandler<RoutingContext>, RequestContext<RoutingContext>> process) {
+  public RestServerHandler<RoutingContext> setProcess(final Consumer<RequestContext<RoutingContext>> process) {
     this.process = process;
     return this;
   }
@@ -73,14 +72,14 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     }
     response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
     headerLinks = vertxRestServer.getLinks(contentType);
-    final RequestContext requestContext = new RequestContext(routingContext);
-    processHead.accept(this, requestContext);
+    final RequestContext requestContext = new VertxRequestContext(routingContext);
+    processHead.accept(requestContext);
     putHeaderLink(headerLinks, response, requestContext, user);
 
     final HttpMethod method = routingContext.request().method();
     LOGGER.fine(() -> MessageFormat.format("Process {0}", method));
     if (!method.equals(HttpMethod.HEAD)) {
-      process.accept(this, requestContext);
+      process.accept(requestContext);
     } else {
       routingContext.end();
     }
