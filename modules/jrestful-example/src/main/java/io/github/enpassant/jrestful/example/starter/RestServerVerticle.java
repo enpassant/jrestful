@@ -1,7 +1,7 @@
 package io.github.enpassant.jrestful.example.starter;
 
-import io.github.enpassant.jrestful.example.account.AccountManager;
-import io.github.enpassant.jrestful.example.account.AccountRestServer;
+import io.github.enpassant.jrestful.example.account.server.AccountManager;
+import io.github.enpassant.jrestful.example.account.server.AccountRestServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;

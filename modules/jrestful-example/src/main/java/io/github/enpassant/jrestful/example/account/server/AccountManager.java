@@ -1,5 +1,6 @@
-package io.github.enpassant.jrestful.example.account;
+package io.github.enpassant.jrestful.example.account.server;
 
+import io.github.enpassant.jrestful.example.account.*;
 import io.vertx.ext.web.handler.HttpException;
 
 import java.util.*;

@@ -1,5 +1,6 @@
-package io.github.enpassant.jrestful.example.account;
+package io.github.enpassant.jrestful.example.account.server;
 
+import io.github.enpassant.jrestful.example.account.*;
 import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.RelLink;
