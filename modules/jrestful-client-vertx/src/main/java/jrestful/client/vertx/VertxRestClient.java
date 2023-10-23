@@ -137,8 +137,9 @@ public class VertxRestClient implements RestClient {
     final String out = linkCall.relLink().out();
     final ClientResult<ClientState<T>> callResult = call(methodFn, rel, linkCall.path(), content, in, out, responseClass);
     callResult.onComplete(
-      callState -> clientState.children().add(callState),
-      throwable -> clientState.children().add(throwable)
+      either -> clientState.children().add(
+        either.isLeft() ? either.left() : either.right()
+      )
     );
     return callResult;
   }

@@ -69,7 +69,7 @@ public class AccountRestClient implements Relations {
                     )
                 )
             )
-        ).onComplete(cs -> logClientState(rootState, start), throwable -> logClientState(rootState, start))
+        ).onComplete(cs -> logClientState(rootState, start))
     ).onFailure(throwable -> handleError(throwable, start));
   }
 

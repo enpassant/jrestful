@@ -23,6 +23,6 @@ public class WebClientVerticle extends AbstractVerticle implements Relations {
 
     final ClientResult<ClientState<Account>> clientStateFuture = accountRestClient.runLongExample()
       .andThen(result -> accountRestClient.runSagaExample());
-    clientStateFuture.onComplete(result -> startPromise.complete(), throwable -> startPromise.complete());
+    clientStateFuture.onComplete(either -> startPromise.complete());
   }
 }

@@ -1,5 +1,8 @@
 package jrestful.client;
 
+import jrestful.fp.Either;
+import jrestful.fp.Left;
+import jrestful.fp.Right;
 import jrestful.fp.Tuple2;
 
 import java.util.function.Consumer;
@@ -15,12 +18,9 @@ public interface ClientResult<T> {
 
   ClientResult<T> recover(Function<Throwable, ClientResult<T>> fn);
 
-  default ClientResult<T> onComplete(
-    final Consumer<T> successHandler,
-    final Consumer<Throwable> failureHandler
-  ) {
-    return this.onSuccess(successHandler)
-      .onFailure(failureHandler);
+  default ClientResult<T> onComplete(final Consumer<Either<Throwable, T>> handler) {
+    return this.onSuccess(t -> handler.accept(Right.of(t)))
+      .onFailure(throwable -> handler.accept(Left.of(throwable)));
   }
 
   <R> ClientResult<Tuple2<T, R>> join(ClientResult<R> that);
