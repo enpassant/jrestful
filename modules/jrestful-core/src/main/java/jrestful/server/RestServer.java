@@ -7,10 +7,9 @@ import jrestful.link.RelLink;
 import jrestful.type.MediaType;
 import jrestful.type.TypeObject;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
-public interface RestServer<T, A> {
+public interface RestServer<A> {
   String API = "api";
 
   String MT_API = "application/RestAPI+json";
@@ -21,22 +20,20 @@ public interface RestServer<T, A> {
 
   Transition apiTransition = new Transition(API, new Root(), RelLink.get("", MT_API));
 
-  void init(final RestApi restApi, final Consumer<RestServer<T, A>> buildHandlers);
+  void init(final RestApi restApi, final Consumer<RestServer<A>> buildHandlers);
 
   void buildHandler(
     final String transitionName,
     final String path,
     final A authorization,
-    final Consumer<RequestContext<T>> process
+    final Consumer<RequestContext> process
   );
 
   void buildHandler(
     final String transitionName,
     final String path,
     final A authorization,
-    final Consumer<RequestContext<T>> processHead,
-    final Consumer<RequestContext<T>> process
+    final Consumer<RequestContext> processHead,
+    final Consumer<RequestContext> process
   );
-
-  <R> Optional<R> parseBodyAs(final RequestContext<T> requestContext, final Class<R> clazz);
 }

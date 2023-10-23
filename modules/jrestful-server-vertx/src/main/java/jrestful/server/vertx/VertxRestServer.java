@@ -1,8 +1,6 @@
 package jrestful.server.vertx;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authorization.Authorization;
 import io.vertx.ext.auth.authorization.AuthorizationContext;
 import io.vertx.ext.web.Router;
@@ -20,7 +18,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class VertxRestServer implements RestServer<RoutingContext, Authorization> {
+public class VertxRestServer implements RestServer<Authorization> {
 
   protected RestApi restApi;
   protected final Router router;
@@ -35,7 +33,7 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
 
   public void init(
     final RestApi restApi,
-    final Consumer<RestServer<RoutingContext, Authorization>> buildHandlers
+    final Consumer<RestServer<Authorization>> buildHandlers
   ) {
     this.restApi = restApi;
 
@@ -60,15 +58,15 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     };
   }
 
-  protected void handleApi(final RequestContext<RoutingContext> requestContext) {
-    requestContext.getContext().json(restApi);
+  protected void handleApi(final RequestContext requestContext) {
+    requestContext.json(restApi);
   }
 
   public void buildHandler(
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final Consumer<RequestContext<RoutingContext>> process
+    final Consumer<RequestContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)
@@ -80,25 +78,14 @@ public class VertxRestServer implements RestServer<RoutingContext, Authorization
     final String transitionName,
     final String path,
     final Authorization authorization,
-    final Consumer<RequestContext<RoutingContext>> processHead,
-    final Consumer<RequestContext<RoutingContext>> process
+    final Consumer<RequestContext> processHead,
+    final Consumer<RequestContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
       transition -> createHandler(transition, path, authorization)
         .setProcessHead(processHead)
         .setProcess(process)
     );
-  }
-
-  public <T> Optional<T> parseBodyAs(final RequestContext<RoutingContext> requestContext, final Class<T> clazz) {
-    try {
-      final JsonObject jsonObject = requestContext.getContext().body().asJsonObject();
-      return Optional.of(jsonObject.mapTo(clazz));
-    } catch (final Exception e) {
-      final HttpServerResponse response = requestContext.getContext().response();
-      response.setStatusCode(400).end("Malformed syntax: " + clazz.getSimpleName());
-      return Optional.empty();
-    }
   }
 
   public RestServerHandler<RoutingContext> createHandler(

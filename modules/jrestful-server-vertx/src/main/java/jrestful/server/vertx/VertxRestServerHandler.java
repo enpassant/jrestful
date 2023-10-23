@@ -28,10 +28,10 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
 
   private List<Link> headerLinks = List.of();
 
-  private Consumer<RequestContext<RoutingContext>> processHead = (routingContext) -> {
+  private Consumer<RequestContext> processHead = (routingContext) -> {
   };
 
-  private Consumer<RequestContext<RoutingContext>> process;
+  private Consumer<RequestContext> process;
 
   public VertxRestServerHandler(
     final VertxRestServer vertxRestServer,
@@ -47,12 +47,12 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     this.transition = transition;
   }
 
-  public RestServerHandler<RoutingContext> setProcessHead(final Consumer<RequestContext<RoutingContext>> processHead) {
+  public RestServerHandler<RoutingContext> setProcessHead(final Consumer<RequestContext> processHead) {
     this.processHead = processHead;
     return this;
   }
 
-  public RestServerHandler<RoutingContext> setProcess(final Consumer<RequestContext<RoutingContext>> process) {
+  public RestServerHandler<RoutingContext> setProcess(final Consumer<RequestContext> process) {
     this.process = process;
     return this;
   }
@@ -88,7 +88,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   public void putHeaderLink(
     final List<Link> headerLinks,
     final HttpServerResponse response,
-    final RequestContext<RoutingContext> requestContext,
+    final RequestContext requestContext,
     final User user
   ) {
     final String linkStr = headerLinks.stream()

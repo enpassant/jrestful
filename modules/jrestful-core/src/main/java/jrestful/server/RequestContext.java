@@ -1,24 +1,12 @@
 package jrestful.server;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-public abstract class RequestContext<T> {
-  private final T context;
-
+public abstract class RequestContext {
   private final Map<String, List<String>> queryParameterMap = new LinkedHashMap<>();
-
-  public RequestContext(final T context) {
-    this.context = context;
-  }
-
-  public T getContext() {
-    return context;
-  }
 
   public void addQueryParameter(final String rel, final String key, final String value) {
     queryParameterMap.putIfAbsent(rel, new ArrayList<>());
@@ -34,5 +22,30 @@ public abstract class RequestContext<T> {
         .collect(Collectors.joining("&"));
       return queryString.isBlank() ? "" : "?" + queryString;
     }
+  }
+
+  public abstract <T> Optional<T> parseBodyAs(final Class<T> clazz);
+
+  public abstract void next();
+
+  public abstract <T> CompletionStage<Void> json(final T object);
+
+  public abstract <T> CompletionStage<Void> json(final int code, final T object);
+
+  public abstract List<String> queryParams(final String key);
+
+  public abstract CompletionStage<Void> sendTextWithCode(final int code, final String message);
+
+  public String queryParam(final String key) {
+    final List<String> list = queryParams(key);
+    if (list.size() > 1) {
+      sendTextWithCode(400, "Too many '" + key + "'query parameter!");
+      return "";
+    }
+    if (list.isEmpty()) {
+      sendTextWithCode(400, "Missing '" + key + "'query parameter!");
+      return "";
+    }
+    return list.get(0);
   }
 }

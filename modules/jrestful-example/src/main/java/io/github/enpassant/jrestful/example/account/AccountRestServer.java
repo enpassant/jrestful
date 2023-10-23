@@ -1,11 +1,9 @@
 package io.github.enpassant.jrestful.example.account;
 
 import io.github.enpassant.jrestful.example.starter.VertxAuthenticate;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.auth.authorization.Authorization;
 import io.vertx.ext.auth.authorization.PermissionBasedAuthorization;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.RelLink;
@@ -33,7 +31,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
 
   private final AccountManager accountManager;
   private final VertxAuthenticate vertxAuthenticate;
-  private final RestServer<RoutingContext, Authorization> restServer;
+  private final RestServer<Authorization> restServer;
 
   private final static Authorization permissionUser =
     PermissionBasedAuthorization.create("user");
@@ -98,7 +96,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     );
   }
 
-  protected void buildHandlers(final RestServer<RoutingContext, Authorization> restServer) {
+  protected void buildHandlers(final RestServer<Authorization> restServer) {
     restServer.buildHandler(LIST_ACCOUNTS, "/auth/account", permissionUser, this::handleListAccountsHead, this::handleListAccounts);
     restServer.buildHandler(NEW_ACCOUNT, "/auth/account/new", permissionUser, this::handleAccountHead, this::handleNewAccount);
     restServer.buildHandler(GET_ACCOUNT, "/auth/account", permissionUser, this::handleAccountHead, this::handleGetAccount);
@@ -109,131 +107,122 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     restServer.buildHandler(WITHDRAW, "/auth/account", permissionUser, this::handleAccountHead, this::handleWithdraw);
   }
 
-  private void handleListAccountsHead(final RequestContext<RoutingContext> requestContext) {
+  private void handleListAccountsHead(final RequestContext requestContext) {
     final String number = accountManager.makeNewAccountNumber().value();
     requestContext.addQueryParameter(REL_NEW, "new", "true");
     requestContext.addQueryParameter(REL_NEW, "accountNumber", number);
   }
 
-  private void handleListAccounts(final RequestContext<RoutingContext> requestContext) {
+  private void handleListAccounts(final RequestContext requestContext) {
     final List<Account> accounts = accountManager.findAll();
-    requestContext.getContext().json(accounts);
+    requestContext.json(accounts);
   }
 
-  private void handleAccountHead(final RequestContext<RoutingContext> requestContext) {
-    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleAccountHead(final RequestContext requestContext) {
+    final String number = requestContext.queryParam("accountNumber");
     requestContext.addQueryParameter(REL_DELETE, "accountNumber", number);
     requestContext.addQueryParameter(REL_CHANGE_NAME, "accountNumber", number);
     requestContext.addQueryParameter(REL_DEPOSIT, "accountNumber", number);
     requestContext.addQueryParameter(REL_WITHDRAW, "accountNumber", number);
   }
 
-  private void handleNewAccount(final RequestContext<RoutingContext> requestContext) {
-    final RoutingContext context = requestContext.getContext();
-    if (context.queryParam("new").isEmpty()) {
-      context.next();
+  private void handleNewAccount(final RequestContext requestContext) {
+    if (requestContext.queryParams("new").isEmpty()) {
+      requestContext.next();
       return;
     }
-    restServer.parseBodyAs(requestContext, Name.class).ifPresent(name -> {
-      final String number = context.queryParam("accountNumber").get(0);
+    requestContext.parseBodyAs(Name.class).ifPresent(name -> {
+      final String number = requestContext.queryParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Account addedAccount = accountManager.addAccount(accountNumber, name);
-      final HttpServerResponse response = context.response();
       if (addedAccount.name().equals(name)) {
-        response.setStatusCode(201);
-        context.json(addedAccount);
+        requestContext.json(201, addedAccount);
       } else {
-        response.setStatusCode(409).end("Conflict");
+        requestContext.sendTextWithCode(409, "Conflict");
       }
     });
   }
 
-  private void handleGetAccount(final RequestContext<RoutingContext> requestContext) {
-    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleGetAccount(final RequestContext requestContext) {
+    final String number = requestContext.queryParam("accountNumber");
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.getAccount(accountNumber);
     if (accountOptional.isPresent()) {
       final Account account = accountOptional.get();
-      requestContext.getContext().json(account);
+      requestContext.json(account);
     } else {
-      final HttpServerResponse response = requestContext.getContext().response();
-      response.setStatusCode(404).end("Not found");
+      requestContext.sendTextWithCode(404, "Not found");
     }
   }
 
-  private void handleDeleteAccount(final RequestContext<RoutingContext> requestContext) {
-    final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleDeleteAccount(final RequestContext requestContext) {
+    final String number = requestContext.queryParam("accountNumber");
     final AccountNumber accountNumber = new AccountNumber(number);
     final Optional<Account> accountOptional = accountManager.deleteAccount(accountNumber);
     if (accountOptional.isPresent()) {
       final Account account = accountOptional.get();
-      requestContext.getContext().json(account);
+      requestContext.json(account);
     } else {
-      final HttpServerResponse response = requestContext.getContext().response();
-      response.setStatusCode(404).end("Not found");
+      requestContext.sendTextWithCode(404, "Not found");
     }
   }
 
-  private void handleModifyAccountName(final RequestContext<RoutingContext> requestContext) {
-    restServer.parseBodyAs(requestContext, Name.class).ifPresent(name -> {
-      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleModifyAccountName(final RequestContext requestContext) {
+    requestContext.parseBodyAs(Name.class).ifPresent(name -> {
+      final String number = requestContext.queryParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.modifyAccountName(accountNumber, name);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        requestContext.getContext().json(account);
+        requestContext.json(account);
       } else {
-        final HttpServerResponse response = requestContext.getContext().response();
-        response.setStatusCode(404).end("Not found");
+        requestContext.sendTextWithCode(404, "Not found");
       }
     });
   }
 
-  private void handleModifyAccountName2(final RequestContext<RoutingContext> requestContext) {
-    restServer.parseBodyAs(requestContext, ChangeName.class).ifPresent(changeName -> {
-      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleModifyAccountName2(final RequestContext requestContext) {
+    requestContext.parseBodyAs(ChangeName.class).ifPresent(changeName -> {
+      final String number = requestContext.queryParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.modifyAccountName2(accountNumber, changeName);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        requestContext.getContext().json(account);
+        requestContext.json(account);
       } else {
-        final HttpServerResponse response = requestContext.getContext().response();
-        response.setStatusCode(404).end("Not found");
+        requestContext.sendTextWithCode(404, "Not found");
       }
     });
   }
 
-  private void handleDeposit(final RequestContext<RoutingContext> requestContext) {
-    restServer.parseBodyAs(requestContext, Deposit.class).ifPresent(deposit -> {
-      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleDeposit(final RequestContext requestContext) {
+    requestContext.parseBodyAs(Deposit.class).ifPresent(deposit -> {
+      final String number = requestContext.queryParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.deposit(accountNumber, deposit);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        requestContext.getContext().json(account);
+        requestContext.json(account);
       } else {
-        final HttpServerResponse response = requestContext.getContext().response();
-        response.setStatusCode(404).end("Not found");
+        requestContext.sendTextWithCode(404, "Not found");
       }
     });
   }
 
-  private void handleWithdraw(final RequestContext<RoutingContext> requestContext) {
-    restServer.parseBodyAs(requestContext, Withdraw.class).ifPresent(withdraw -> {
-      final String number = requestContext.getContext().queryParam("accountNumber").get(0);
+  private void handleWithdraw(final RequestContext requestContext) {
+    requestContext.parseBodyAs(Withdraw.class).ifPresent(withdraw -> {
+      final String number = requestContext.queryParam("accountNumber");
       final AccountNumber accountNumber = new AccountNumber(number);
       final Optional<Account> accountOptional =
         accountManager.withdraw(accountNumber, withdraw);
       if (accountOptional.isPresent()) {
         final Account account = accountOptional.get();
-        requestContext.getContext().json(account);
+        requestContext.json(account);
       } else {
-        final HttpServerResponse response = requestContext.getContext().response();
-        response.setStatusCode(404).end("Not found");
+        requestContext.sendTextWithCode(404, "Not found");
       }
     });
   }
