@@ -8,12 +8,18 @@
   <artifactId>jrestful</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
+
+  <name>jrestful</name>
+  <description>RESTful java library with HATEOAS</description>
+
   <modules>
     <module>modules/jrestful-core</module>
     <module>modules/jrestful-example</module>
     <module>modules/jrestful-server-vertx</module>
     <module>modules/jrestful-client-vertx</module>
   </modules>
+
+  <url>https://github.com/enpassant/jazio</url>
 
   <licenses>
     <license>
@@ -25,7 +31,17 @@
 
   <scm>
     <url>https://github.com/enpassant/jrestful.git</url>
+    <connection>scm:git:git@github.com:enpassant/jazio.git</connection>
   </scm>
+
+  <developers>
+    <developer>
+      <id>enpassant</id>
+      <name>Enpassant</name>
+      <email>enpassant.prog@gmail.com</email>
+      <url>https://github.com/enpassant</url>
+    </developer>
+  </developers>
 
   <distributionManagement>
     <snapshotRepository>
