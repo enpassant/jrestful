@@ -5,11 +5,11 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.authorization.Authorization;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.Transition;
 import jrestful.link.Link;
 import jrestful.server.RequestContext;
+import jrestful.server.RestAuthorization;
 import jrestful.server.RestServerHandler;
 
 import java.text.MessageFormat;
@@ -23,7 +23,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   private final VertxRestServer vertxRestServer;
   private final String contentType;
   private final String rel;
-  private final Authorization authorization;
+  private final RestAuthorization restAuthorization;
   private final Transition transition;
 
   private List<Link> headerLinks = List.of();
@@ -37,13 +37,13 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     final VertxRestServer vertxRestServer,
     final String contentType,
     final String rel,
-    final Authorization authorization,
+    final RestAuthorization restAuthorization,
     final Transition transition
   ) {
     this.vertxRestServer = vertxRestServer;
     this.contentType = contentType;
     this.rel = rel;
-    this.authorization = authorization;
+    this.restAuthorization = restAuthorization;
     this.transition = transition;
   }
 
@@ -61,8 +61,9 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
   public void handle(final RoutingContext routingContext) {
     final HttpServerResponse response = routingContext.response();
     final User user = routingContext.user();
+    final RequestContext requestContext = new VertxRequestContext(routingContext);
     if (user != null) {
-      if (!authorization.match(user)) {
+      if (!restAuthorization.match(requestContext)) {
         response.setStatusCode(403).end("Forbidden");
         return;
       } else {
@@ -72,7 +73,6 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     }
     response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
     headerLinks = vertxRestServer.getLinks(contentType);
-    final RequestContext requestContext = new VertxRequestContext(routingContext);
     processHead.accept(requestContext);
     putHeaderLink(headerLinks, response, requestContext, user);
 
@@ -92,7 +92,7 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     final User user
   ) {
     final String linkStr = headerLinks.stream()
-      .filter(link -> user == null || authorization.match(user))
+      .filter(link -> user == null || restAuthorization.match(requestContext))
       .map(link -> link.toWebLink(requestContext.qetQueryString(link.relLink().rel())))
       .collect(Collectors.joining(", "));
     response.putHeader("Link", linkStr);

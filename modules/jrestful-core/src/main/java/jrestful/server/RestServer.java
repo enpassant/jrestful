@@ -9,7 +9,7 @@ import jrestful.type.TypeObject;
 
 import java.util.function.Consumer;
 
-public interface RestServer<A> {
+public interface RestServer {
   String API = "api";
 
   String MT_API = "application/RestAPI+json";
@@ -20,20 +20,22 @@ public interface RestServer<A> {
 
   Transition apiTransition = new Transition(API, new Root(), RelLink.get("", MT_API));
 
-  void init(final RestApi restApi, final Consumer<RestServer<A>> buildHandlers);
+  void init(final RestApi restApi, final Consumer<RestServer> buildHandlers);
 
   void buildHandler(
     final String transitionName,
     final String path,
-    final A authorization,
+    final RestAuthorization restAuthorization,
     final Consumer<RequestContext> process
   );
 
   void buildHandler(
     final String transitionName,
     final String path,
-    final A authorization,
+    final RestAuthorization restAuthorization,
     final Consumer<RequestContext> processHead,
     final Consumer<RequestContext> process
   );
+
+  RestAuthorization createPermissionBased(final String permission);
 }

@@ -2,6 +2,7 @@ package jrestful.server.vertx;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.server.RequestContext;
 
@@ -52,5 +53,9 @@ public class VertxRequestContext extends RequestContext {
     final HttpServerResponse response = context.response();
     response.setStatusCode(code);
     return context.json(object).toCompletionStage();
+  }
+
+  public User getUser() {
+    return context.user();
   }
 }

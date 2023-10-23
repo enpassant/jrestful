@@ -1,8 +1,7 @@
 package jrestful.server.vertx;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.auth.authorization.Authorization;
-import io.vertx.ext.auth.authorization.AuthorizationContext;
+import io.vertx.ext.auth.authorization.PermissionBasedAuthorization;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.Method;
@@ -11,6 +10,7 @@ import jrestful.Transition;
 import jrestful.link.Link;
 import jrestful.link.RelLink;
 import jrestful.server.RequestContext;
+import jrestful.server.RestAuthorization;
 import jrestful.server.RestServer;
 import jrestful.server.RestServerHandler;
 
@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class VertxRestServer implements RestServer<Authorization> {
+public class VertxRestServer implements RestServer {
 
   protected RestApi restApi;
   protected final Router router;
@@ -33,7 +33,7 @@ public class VertxRestServer implements RestServer<Authorization> {
 
   public void init(
     final RestApi restApi,
-    final Consumer<RestServer<Authorization>> buildHandlers
+    final Consumer<RestServer> buildHandlers
   ) {
     this.restApi = restApi;
 
@@ -44,18 +44,8 @@ public class VertxRestServer implements RestServer<Authorization> {
     buildHandlers.accept(this);
   }
 
-  private Authorization permissionAll() {
-    return new Authorization() {
-      @Override
-      public boolean match(final AuthorizationContext context) {
-        return true;
-      }
-
-      @Override
-      public boolean verify(final Authorization authorization) {
-        return true;
-      }
-    };
+  private RestAuthorization permissionAll() {
+    return context -> true;
   }
 
   protected void handleApi(final RequestContext requestContext) {
@@ -65,11 +55,11 @@ public class VertxRestServer implements RestServer<Authorization> {
   public void buildHandler(
     final String transitionName,
     final String path,
-    final Authorization authorization,
+    final RestAuthorization restAuthorization,
     final Consumer<RequestContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
-      transition -> createHandler(transition, path, authorization)
+      transition -> createHandler(transition, path, restAuthorization)
         .setProcess(process)
     );
   }
@@ -77,12 +67,12 @@ public class VertxRestServer implements RestServer<Authorization> {
   public void buildHandler(
     final String transitionName,
     final String path,
-    final Authorization authorization,
+    final RestAuthorization restAuthorization,
     final Consumer<RequestContext> processHead,
     final Consumer<RequestContext> process
   ) {
     restApi.getTransition(transitionName).ifPresent(
-      transition -> createHandler(transition, path, authorization)
+      transition -> createHandler(transition, path, restAuthorization)
         .setProcessHead(processHead)
         .setProcess(process)
     );
@@ -91,7 +81,7 @@ public class VertxRestServer implements RestServer<Authorization> {
   public RestServerHandler<RoutingContext> createHandler(
     final Transition transition,
     final String path,
-    final Authorization authorization
+    final RestAuthorization restAuthorization
   ) {
     final RelLink relLink = transition.relLink();
     final String contextName = transition.context().name();
@@ -110,7 +100,7 @@ public class VertxRestServer implements RestServer<Authorization> {
       this,
       contentType,
       relLink.rel(),
-      authorization,
+      restAuthorization,
       transition);
     router.route(httpMethod, path)
       .consumes(relLink.in().orElse("*/*"))
@@ -145,5 +135,12 @@ public class VertxRestServer implements RestServer<Authorization> {
       case PUT -> HttpMethod.PUT;
       case DELETE -> HttpMethod.DELETE;
     };
+  }
+
+  @Override
+  public RestAuthorization createPermissionBased(final String permission) {
+    return new VertxRestAuthorization(
+      PermissionBasedAuthorization.create(permission)
+    );
   }
 }
