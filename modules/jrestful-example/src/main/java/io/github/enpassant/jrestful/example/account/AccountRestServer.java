@@ -1,14 +1,11 @@
 package io.github.enpassant.jrestful.example.account;
 
-import io.github.enpassant.jrestful.example.starter.VertxAuthenticate;
-import io.vertx.ext.web.Router;
 import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.RelLink;
 import jrestful.server.RequestContext;
 import jrestful.server.RestAuthorization;
 import jrestful.server.RestServer;
-import jrestful.server.vertx.VertxRestServer;
 import jrestful.type.MediaType;
 import jrestful.type.TypeList;
 import jrestful.type.TypeObject;
@@ -29,24 +26,21 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
   public static final String WITHDRAW = "withdraw";
 
   private final AccountManager accountManager;
-  private final VertxAuthenticate vertxAuthenticate;
   private final RestServer restServer;
 
   private final RestAuthorization permissionUser;
   private final RestAuthorization permissionAdmin;
 
   public AccountRestServer(
-    final Router router,
-    final AccountManager accountManager,
-    final VertxAuthenticate vertxAuthenticate
+    final RestServer restServer,
+    final AccountManager accountManager
   ) {
-    restServer = new VertxRestServer(router);
+    this.restServer = restServer;
 
     this.permissionUser = restServer.createPermissionBased("user");
     this.permissionAdmin = restServer.createPermissionBased("admin");
 
     this.accountManager = accountManager;
-    this.vertxAuthenticate = vertxAuthenticate;
 
     final RestApi restApi = createRestApi();
     restServer.init(restApi, this::buildHandlers);

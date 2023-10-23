@@ -9,6 +9,7 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
+import jrestful.server.vertx.VertxRestServer;
 
 import java.text.MessageFormat;
 import java.util.logging.Logger;
@@ -36,8 +37,9 @@ public class RestServerVerticle extends AbstractVerticle {
 
     router.route().handler(BodyHandler.create());
 
+    final VertxRestServer vertxRestServer = new VertxRestServer(router);
     final AccountRestServer accountRestServer =
-      new AccountRestServer(router, accountManager, vertxAuthenticate);
+      new AccountRestServer(vertxRestServer, accountManager);
 
     server.requestHandler(router);
     server.listen(port);
