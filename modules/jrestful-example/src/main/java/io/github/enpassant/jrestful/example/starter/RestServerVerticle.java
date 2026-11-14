@@ -42,7 +42,13 @@ public class RestServerVerticle extends AbstractVerticle {
       new AccountRestServer(vertxRestServer, accountManager);
 
     server.requestHandler(router);
-    server.listen(port);
+    server.listen(port, res -> {
+      if (res.succeeded()) {
+        System.out.println("HTTP szerver ténylegesen figyel a 8080-as porton!");
+      } else {
+        System.err.println("HIBA: Nem sikerült a portot lefoglalni: " + res.cause().getMessage());
+      }
+    });
 
     startPromise.complete();
   }

@@ -19,7 +19,7 @@
     <module>modules/jrestful-client-vertx</module>
   </modules>
 
-  <url>https://github.com/enpassant/jazio</url>
+  <url>https://github.com/enpassant/jrestful</url>
 
   <licenses>
     <license>
@@ -31,7 +31,7 @@
 
   <scm>
     <url>https://github.com/enpassant/jrestful.git</url>
-    <connection>scm:git:git@github.com:enpassant/jazio.git</connection>
+    <connection>scm:git:git@github.com:enpassant/jrestful.git</connection>
   </scm>
 
   <developers>
@@ -66,22 +66,27 @@
     <junit-jupiter.version>5.9.1</junit-jupiter.version>
   </properties>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <profiles>
+        <profile>
+            <id>sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
