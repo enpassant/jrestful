@@ -17,6 +17,9 @@
     <module>modules/jrestful-example</module>
     <module>modules/jrestful-server-vertx</module>
     <module>modules/jrestful-client-vertx</module>
+    <module>modules/jrestful-example-quarkus-api</module>
+    <module>modules/jrestful-example-quarkus-server</module>
+    <module>modules/jrestful-example-quarkus-client</module>
   </modules>
 
   <url>https://github.com/enpassant/jrestful</url>
