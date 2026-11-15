@@ -53,15 +53,15 @@ public final class AccountResource {
   }
 
   @GET
-  @Produces(ACCOUNT_LIST)
+  @Produces(APPLICATION_LIST_ACCOUNT_JSON)
   @JRestTransition(LIST_ACCOUNTS)
   @RolesAllowed("user")
   public void list(final RequestContext context) { context.json(accounts.findAll()); }
 
   @PUT
   @Path("/new")
-  @Consumes(NAME)
-  @Produces(ACCOUNT)
+  @Consumes(APPLICATION_NAME_JSON)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(NEW_ACCOUNT)
   @RolesAllowed("user")
   public void create(final RequestContext context) {
@@ -69,7 +69,7 @@ public final class AccountResource {
   }
 
   @GET
-  @Produces(ACCOUNT)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(GET_ACCOUNT)
   @RolesAllowed("user")
   public void get(final RequestContext context) {
@@ -77,7 +77,7 @@ public final class AccountResource {
   }
 
   @DELETE
-  @Produces(ACCOUNT)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(DELETE_ACCOUNT)
   @RolesAllowed("admin")
   public void delete(final RequestContext context) {
@@ -85,8 +85,8 @@ public final class AccountResource {
   }
 
   @PUT
-  @Consumes(NAME)
-  @Produces(ACCOUNT)
+  @Consumes(APPLICATION_NAME_JSON)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(CHANGE_ACCOUNT_NAME)
   @RolesAllowed("admin")
   public void changeName(final RequestContext context) {
@@ -95,8 +95,8 @@ public final class AccountResource {
   }
 
   @PUT
-  @Consumes(CHANGE_NAME)
-  @Produces(ACCOUNT)
+  @Consumes(APPLICATION_CHANGE_NAME_JSON)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(CHANGE_ACCOUNT_NAME_IF_CURRENT)
   @RolesAllowed("admin")
   public void changeNameIfCurrent(final RequestContext context) {
@@ -105,8 +105,8 @@ public final class AccountResource {
   }
 
   @PUT
-  @Consumes(DEPOSIT)
-  @Produces(ACCOUNT)
+  @Consumes(APPLICATION_DEPOSIT_JSON)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(DEPOSIT_ACCOUNT)
   @RolesAllowed("user")
   public void deposit(final RequestContext context) {
@@ -115,8 +115,8 @@ public final class AccountResource {
   }
 
   @PUT
-  @Consumes(WITHDRAW)
-  @Produces(ACCOUNT)
+  @Consumes(APPLICATION_WITHDRAW_JSON)
+  @Produces(APPLICATION_ACCOUNT_JSON)
   @JRestTransition(WITHDRAW_ACCOUNT)
   @RolesAllowed("user")
   public void withdraw(final RequestContext context) {

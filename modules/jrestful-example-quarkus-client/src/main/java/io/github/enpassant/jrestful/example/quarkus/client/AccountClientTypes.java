@@ -12,11 +12,11 @@ import static io.github.enpassant.jrestful.example.quarkus.api.AccountApi.*;
 
 final class AccountClientTypes {
   static final Map<String, Class<?>> KNOWN_TYPES = Map.of(
-    ACCOUNT, Account.class,
-    NAME, Name.class,
-    CHANGE_NAME, ChangeName.class,
-    DEPOSIT, Deposit.class,
-    WITHDRAW, Withdraw.class
+    APPLICATION_ACCOUNT_JSON, Account.class,
+    APPLICATION_NAME_JSON, Name.class,
+    APPLICATION_CHANGE_NAME_JSON, ChangeName.class,
+    APPLICATION_DEPOSIT_JSON, Deposit.class,
+    APPLICATION_WITHDRAW_JSON, Withdraw.class
   );
 
   private AccountClientTypes() {
