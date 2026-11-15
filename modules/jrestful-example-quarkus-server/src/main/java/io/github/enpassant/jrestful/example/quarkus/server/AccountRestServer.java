@@ -42,7 +42,7 @@ public class AccountRestServer {
     final MediaType account = new MediaType(ACCOUNT,
       new TypeObject<>("Account", "(name: Name, accountNumber: AccountNumber, balance: Double)"));
     final MediaType accountList = new MediaType(ACCOUNT_LIST, new TypeList<>(account));
-    final MediaType name = new MediaType(NAME, new TypeObject<>("Name", "(value: String)"));
+    final MediaType name = new MediaType(NAME, new TypeObject<>("Name", "String"));
     final MediaType changeName = new MediaType(CHANGE_NAME,
       new TypeObject<>("ChangeName", "(currentName: Name, newName: Name)"));
     final MediaType deposit = new MediaType(DEPOSIT,
@@ -51,7 +51,7 @@ public class AccountRestServer {
       new TypeObject<>("Withdraw", "(targetAccount: AccountNumber, amount: Double)"));
 
     final Types types = new Types(server.api, account, accountList, name, changeName, deposit, withdraw,
-      new TypeObject<>("AccountNumber", "(value: String)"));
+      new TypeObject<>("AccountNumber", "String"));
 
     return new RestApi(types,
       server.apiTransition,

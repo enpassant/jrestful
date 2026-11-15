@@ -373,7 +373,7 @@ Belépési pont (_root_): /api
 Médiatípusok:
 
 - Account(name: Name, number: AccountNumber, balance: Double)
-- Name(value: String[80])
+- Name: String[80]
 - Deposit(sourceAccount: AccountNumber, amount: Double)
 - Withdraw(targetAccount: AccountNumber, amount: Double)
 

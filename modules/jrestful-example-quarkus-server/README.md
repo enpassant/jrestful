@@ -6,8 +6,12 @@ The server uses the Quarkus-managed Vert.x `Router` and registers the existing
 Run in development mode from the repository root:
 
 ```shell
-mvn -pl modules/jrestful-example-quarkus-server -am quarkus:dev
+mvn -pl modules/jrestful-example-quarkus-server -am install -DskipTests
+mvn -f modules/jrestful-example-quarkus-server/pom.xml quarkus:dev
 ```
+
+The first command installs the module's reactor dependencies. The second command
+uses the server module's POM directly so Maven can resolve the `quarkus` plugin prefix.
 
 Build a native executable:
 

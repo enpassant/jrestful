@@ -8,7 +8,7 @@ With both applications running, create an account through the client application
 ```shell
 curl -X POST http://localhost:8081/demo/accounts \
   -H 'Content-Type: application/json' \
-  -d '{"value":"Teszt Elek"}'
+  -d '"Teszt Elek"'
 ```
 
 The OTP server entry point is configured by `account-api.otp-url` (port `8080` by default).
@@ -32,8 +32,12 @@ the second operation fails. Its response explicitly reports whether compensation
 Run in development mode from the repository root:
 
 ```shell
-mvn -pl modules/jrestful-example-quarkus-client -am quarkus:dev
+mvn -pl modules/jrestful-example-quarkus-client -am install -DskipTests
+mvn -f modules/jrestful-example-quarkus-client/pom.xml quarkus:dev
 ```
+
+The first command installs the module's reactor dependencies. The second command
+uses the client module's POM directly so Maven can resolve the `quarkus` plugin prefix.
 
 Build a native executable:
 

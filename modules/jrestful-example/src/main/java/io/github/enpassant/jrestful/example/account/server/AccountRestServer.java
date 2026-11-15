@@ -58,7 +58,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     );
     final var name = new MediaType(
       APPLICATION_NAME_JSON,
-      new TypeObject<>("Name", "(value: String[80])")
+      new TypeObject<>("Name", "String[80]")
     );
     final var changeName = new MediaType(
       APPLICATION_CHANGE_NAME_JSON,
@@ -74,7 +74,7 @@ public class AccountRestServer implements AccountMediaTypes, Relations {
     );
 
     final Types types = new Types(restServer.api, account, accountList, changeName, deposit, withdraw, name,
-      new TypeObject<>("AccountNumber", "(value: String[80]")
+      new TypeObject<>("AccountNumber", "String[80]")
     );
 
     return new RestApi(
