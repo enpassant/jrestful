@@ -5,12 +5,14 @@ import io.github.enpassant.jrestful.example.quarkus.api.ChangeName;
 import io.github.enpassant.jrestful.example.quarkus.api.Deposit;
 import io.github.enpassant.jrestful.example.quarkus.api.Name;
 import io.github.enpassant.jrestful.example.quarkus.api.Withdraw;
+import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
 import jrestful.RestApi;
 import jrestful.Transition;
 import jrestful.link.RelLink;
 import jrestful.server.RequestContext;
 import jrestful.server.RestAuthorization;
 import jrestful.server.RestServer;
+import jrestful.server.vertx.VertxRequestContext;
 import jrestful.type.MediaType;
 import jrestful.type.TypeList;
 import jrestful.type.TypeObject;
@@ -30,12 +32,21 @@ public class AccountRestServer {
 
   private final AccountManager accounts;
   private final RestServer server;
-  private final RestAuthorization allowAll = context -> true;
+  private final RestAuthorization user;
+  private final RestAuthorization admin;
 
   public AccountRestServer(final RestServer server, final AccountManager accounts) {
     this.server = server;
     this.accounts = accounts;
+    this.user = role("user");
+    this.admin = role("admin");
     server.init(createApi(), this::buildHandlers);
+  }
+
+  private RestAuthorization role(final String role) {
+    return context -> context instanceof final VertxRequestContext vertxContext
+      && vertxContext.getUser() instanceof final QuarkusHttpUser user
+      && user.getSecurityIdentity().hasRole(role);
   }
 
   private RestApi createApi() {
@@ -67,14 +78,14 @@ public class AccountRestServer {
   }
 
   private void buildHandlers(final RestServer restServer) {
-    restServer.buildHandler(LIST_ACCOUNTS, "/account", allowAll, this::listHead, this::list);
-    restServer.buildHandler(NEW_ACCOUNT, "/account/new", allowAll, this::accountHead, this::create);
-    restServer.buildHandler(GET_ACCOUNT, "/account", allowAll, this::accountHead, this::get);
-    restServer.buildHandler(DELETE_ACCOUNT, "/account", allowAll, this::accountHead, this::delete);
-    restServer.buildHandler(CHANGE_ACCOUNT_NAME, "/account", allowAll, this::accountHead, this::changeName);
-    restServer.buildHandler(CHANGE_ACCOUNT_NAME_IF_CURRENT, "/account", allowAll, this::accountHead, this::changeNameIfCurrent);
-    restServer.buildHandler(DEPOSIT_ACCOUNT, "/account", allowAll, this::accountHead, this::deposit);
-    restServer.buildHandler(WITHDRAW_ACCOUNT, "/account", allowAll, this::accountHead, this::withdraw);
+    restServer.buildHandler(LIST_ACCOUNTS, "/account", user, this::listHead, this::list);
+    restServer.buildHandler(NEW_ACCOUNT, "/account/new", user, this::accountHead, this::create);
+    restServer.buildHandler(GET_ACCOUNT, "/account", user, this::accountHead, this::get);
+    restServer.buildHandler(DELETE_ACCOUNT, "/account", admin, this::accountHead, this::delete);
+    restServer.buildHandler(CHANGE_ACCOUNT_NAME, "/account", admin, this::accountHead, this::changeName);
+    restServer.buildHandler(CHANGE_ACCOUNT_NAME_IF_CURRENT, "/account", admin, this::accountHead, this::changeNameIfCurrent);
+    restServer.buildHandler(DEPOSIT_ACCOUNT, "/account", user, this::accountHead, this::deposit);
+    restServer.buildHandler(WITHDRAW_ACCOUNT, "/account", user, this::accountHead, this::withdraw);
   }
 
   private void listHead(final RequestContext context) {

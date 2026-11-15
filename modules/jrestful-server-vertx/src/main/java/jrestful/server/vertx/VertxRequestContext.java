@@ -1,7 +1,7 @@
 package jrestful.server.vertx;
 
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.Json;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import jrestful.server.RequestContext;
@@ -19,8 +19,7 @@ public class VertxRequestContext extends RequestContext {
 
   public <T> Optional<T> parseBodyAs(final Class<T> clazz) {
     try {
-      final JsonObject jsonObject = context.body().asJsonObject();
-      return Optional.of(jsonObject.mapTo(clazz));
+      return Optional.of(Json.decodeValue(context.body().buffer(), clazz));
     } catch (final Exception e) {
       final HttpServerResponse response = context.response();
       response.setStatusCode(400).end("Malformed syntax: " + clazz.getSimpleName());

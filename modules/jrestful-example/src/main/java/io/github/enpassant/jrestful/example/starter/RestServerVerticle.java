@@ -33,6 +33,13 @@ public class RestServerVerticle extends AbstractVerticle {
     authHandler.add(JWTAuthHandler.create(jwtAuth));
 
     router.route("/auth/*").handler(authHandler);
+    router.route("/auth/*").handler(routingContext -> {
+      final String accessToken = routingContext.user().principal().getString("access_token");
+      if (accessToken != null) {
+        routingContext.response().putHeader("Authorization", "Bearer " + accessToken);
+      }
+      routingContext.next();
+    });
     router.route("/auth/*").failureHandler(this::handleFailure);
 
     router.route().handler(BodyHandler.create());

@@ -140,7 +140,8 @@ public class VertxRestServer implements RestServer {
   @Override
   public RestAuthorization createPermissionBased(final String permission) {
     return new VertxRestAuthorization(
-      PermissionBasedAuthorization.create(permission)
+      PermissionBasedAuthorization.create(permission),
+      permission
     );
   }
 }

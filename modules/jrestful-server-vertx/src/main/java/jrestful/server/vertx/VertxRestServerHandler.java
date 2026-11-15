@@ -62,14 +62,10 @@ public class VertxRestServerHandler implements Handler<RoutingContext>, RestServ
     final HttpServerResponse response = routingContext.response();
     final User user = routingContext.user();
     final RequestContext requestContext = new VertxRequestContext(routingContext);
-    if (user != null) {
-      if (!restAuthorization.match(requestContext)) {
-        response.setStatusCode(403).end("Forbidden");
-        return;
-      } else {
-        final String accessToken = user.principal().getString("access_token");
-        response.putHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + accessToken);
-      }
+    if (!restAuthorization.match(requestContext)) {
+      response.setStatusCode(user == null ? 401 : 403)
+        .end(user == null ? "Unauthorized" : "Forbidden");
+      return;
     }
     response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
     headerLinks = vertxRestServer.getLinks(contentType);

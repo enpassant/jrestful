@@ -18,11 +18,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.function.Supplier;
 
 import static io.github.enpassant.jrestful.example.quarkus.api.AccountApi.*;
 
 @ApplicationScoped
 public class AccountClient {
+  private static final Supplier<String> ADMIN_CREDENTIALS = () -> "Basic " + Base64.getEncoder()
+    .encodeToString("admin:xxx".getBytes(StandardCharsets.UTF_8));
   private final Vertx vertx;
   private final String otpEntryPoint;
   private final String cibEntryPoint;
@@ -41,7 +46,7 @@ public class AccountClient {
     final RestClient client = newClient();
     final CompletableFuture<Account> result = new CompletableFuture<>();
 
-    client.init(otpEntryPoint, () -> "", AccountClientTypes.KNOWN_TYPES)
+    client.init(otpEntryPoint, ADMIN_CREDENTIALS, AccountClientTypes.KNOWN_TYPES)
       .andThen(root -> client.head(root, REL_ACCOUNTS))
       .andThen(accounts -> client.put(accounts, REL_NEW, name, Account.class))
       .onSuccess(account -> result.complete(account.getData()))
@@ -56,7 +61,7 @@ public class AccountClient {
     final CompletableFuture<LongExampleResult> result = new CompletableFuture<>();
     final AtomicReference<Account> deletedAccount = new AtomicReference<>();
 
-    client.init(otpEntryPoint, () -> "", AccountClientTypes.KNOWN_TYPES)
+    client.init(otpEntryPoint, ADMIN_CREDENTIALS, AccountClientTypes.KNOWN_TYPES)
       .andThen(root ->
         client.head(root, REL_ACCOUNTS)
           .andThen(accounts ->
@@ -113,8 +118,8 @@ public class AccountClient {
     final AtomicBoolean compensated = new AtomicBoolean();
     final double amount = 3200.0;
 
-    otpClient.init(otpEntryPoint, () -> "", AccountClientTypes.KNOWN_TYPES)
-      .join(cibClient.init(cibEntryPoint, () -> "", AccountClientTypes.KNOWN_TYPES))
+    otpClient.init(otpEntryPoint, ADMIN_CREDENTIALS, AccountClientTypes.KNOWN_TYPES)
+      .join(cibClient.init(cibEntryPoint, ADMIN_CREDENTIALS, AccountClientTypes.KNOWN_TYPES))
       .andThen(roots ->
         otpClient.head(roots.getFirst(), REL_ACCOUNTS)
           .join(cibClient.head(roots.getSecond(), REL_ACCOUNTS))
