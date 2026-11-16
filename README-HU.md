@@ -8,6 +8,55 @@ visznek minket.
 
 A következő cikkben megmutatom a helyes utat ...
 
+## Projektmodulok
+
+A projekt Java 21-et használó, többmodulos Maven projekt. A modulok két csoportra
+oszthatók: az újrahasználható könyvtárakra és az ezeket bemutató példákra.
+
+### Könyvtármodulok
+
+- **`jrestful-core`** – A REST API, az állapotátmenetek, a relációk, a
+  médiatípusok és a közös szerver- és kliensoldali absztrakciók modellje.
+  [README](modules/jrestful-core/README-HU.md)
+- **`jrestful-server-vertx`** – Vert.x Web alapú szerveradapter, amely a
+  `RestApi` átmeneteiből HTTP route-okat és hipermédia linkeket készít.
+  [README](modules/jrestful-server-vertx/README-HU.md)
+- **`jrestful-server-jaxrs`** – Opcionális adapter a szerveroldali definíciók
+  JAX-RS `@Path`, HTTP metódus, média- és Jakarta Security annotációkkal történő
+  megadásához. Önálló JAX-RS runtime-ot nem biztosít.
+  [README](modules/jrestful-server-jaxrs/README-HU.md)
+- **`jrestful-client-vertx`** – Vert.x Web Client alapú kliensadapter, amely a
+  szervertől kapott API-t és hipermédia linkeket követi.
+  [README](modules/jrestful-client-vertx/README-HU.md)
+- **`quarkus-jrestful-server`** – Quarkus szerverextension a JAX-RS-szel
+  definiált jrestful resource-ok build-time felderítéséhez, ellenőrzéséhez,
+  CDI-regisztrációjához és Vert.x route-jainak létrehozásához. Ez kizárólag
+  szerveroldali extension; a klienshez jelenleg nincs Quarkus extension.
+  [README](modules/quarkus-jrestful-server/README-HU.md)
+- **`quarkus-jrestful-server-deployment`** – A szerverextension Quarkus
+  build-time része. Belső pármodul, amelyet az alkalmazások nem vesznek fel
+  közvetlen függőségként.
+  [Közös extension README](modules/quarkus-jrestful-server/README-HU.md)
+
+### Példamodulok
+
+- **`jrestful-example`** – A klasszikus Vert.x alapú, egy alkalmazásban futó
+  kliens- és szerverpélda a számlakezelési API-val.
+  [README](modules/jrestful-example/README-HU.md)
+- **`jrestful-example-quarkus-api`** – A különálló Quarkus kliens- és
+  szerverpéldák közös protokollszótára, médiatípus-konstansai és DTO-i.
+  [README](modules/jrestful-example-quarkus-api/README-HU.md)
+- **`jrestful-example-quarkus-server`** – Quarkus szerverpélda közvetlen
+  `jrestful-server-vertx` integrációval, Basic hitelesítéssel és aláírt JWT-vel.
+  [README](modules/jrestful-example-quarkus-server/README-HU.md)
+- **`jrestful-example-quarkus-server-jaxrs`** – Az előzővel azonos API-t adó
+  szerverpélda JAX-RS annotációkkal és a `quarkus-jrestful-server` extensionnel.
+  [README](modules/jrestful-example-quarkus-server-jaxrs/README-HU.md)
+- **`jrestful-example-quarkus-client`** – Quarkus klienspélda, amely a meglévő
+  `jrestful-client-vertx` adaptert használja a Quarkus által kezelt Vert.x
+  példánnyal.
+  [README](modules/jrestful-example-quarkus-client/README-HU.md)
+
 ## REST és RESTful definíciója
 
 A [Wikipédián](https://hu.wikipedia.org/wiki/REST) ([angolul](https://en.wikipedia.org/wiki/Representational_state_transfer))
