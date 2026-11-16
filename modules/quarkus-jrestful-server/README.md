@@ -1,4 +1,4 @@
-# jrestful Quarkus extension
+# jrestful Quarkus server extension
 
 The extension discovers CDI resources whose methods use `@JRestTransition`,
 keeps JAX-RS `@Path`, HTTP method, `@Consumes`, `@Produces`, and
@@ -10,7 +10,7 @@ Add the runtime extension to a Quarkus application:
 ```xml
 <dependency>
   <groupId>io.github.enpassant</groupId>
-  <artifactId>quarkus-jrestful</artifactId>
+  <artifactId>quarkus-jrestful-server</artifactId>
   <version>${jrestful.version}</version>
 </dependency>
 ```

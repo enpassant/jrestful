@@ -31,7 +31,7 @@
   <dependencies>
     <dependency>
       <groupId>io.github.enpassant</groupId>
-      <artifactId>quarkus-jrestful</artifactId>
+      <artifactId>quarkus-jrestful-server</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

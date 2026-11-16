@@ -10,10 +10,13 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>quarkus-jrestful-deployment</artifactId>
-  <name>Quarkus - jrestful - Deployment</name>
+  <artifactId>quarkus-jrestful-server</artifactId>
+  <name>Quarkus - jrestful Server - Runtime</name>
+  <description>Quarkus integration for jrestful JAX-RS resources</description>
 
-  <properties><maven.compiler.release>21</maven.compiler.release></properties>
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -30,18 +33,40 @@
   <dependencies>
     <dependency>
       <groupId>io.github.enpassant</groupId>
-      <artifactId>quarkus-jrestful</artifactId>
+      <artifactId>jrestful-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-core-deployment</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-arc-deployment</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-vertx-http-deployment</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-jackson-deployment</artifactId></dependency>
-    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    <dependency>
+      <groupId>io.github.enpassant</groupId>
+      <artifactId>jrestful-server-vertx</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.enpassant</groupId>
+      <artifactId>jrestful-server-jaxrs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-arc</artifactId></dependency>
+    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-vertx-http</artifactId></dependency>
+    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-jackson</artifactId></dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-extension-maven-plugin</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals><goal>extension-descriptor</goal></goals>
+            <configuration>
+              <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>

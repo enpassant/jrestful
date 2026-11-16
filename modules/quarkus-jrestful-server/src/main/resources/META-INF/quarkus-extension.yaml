@@ -1,7 +1,7 @@
-name: jrestful
+name: jrestful Server
 description: Build-time Quarkus integration for jrestful JAX-RS resources
 metadata:
-  short-name: jrestful
+  short-name: jrestful-server
   keywords:
     - jrestful
     - jax-rs

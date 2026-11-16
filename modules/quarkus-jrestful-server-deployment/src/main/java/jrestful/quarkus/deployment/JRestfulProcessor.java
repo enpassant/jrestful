@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 final class JRestfulProcessor {
-  private static final String FEATURE = "jrestful";
+  private static final String FEATURE = "jrestful-server";
   private static final DotName JREST_TRANSITION = DotName.createSimple(
     "jrestful.server.jaxrs.JRestTransition");
   private static final DotName JREST_TRANSITIONS = DotName.createSimple(
@@ -70,7 +70,7 @@ final class JRestfulProcessor {
       || capabilities.isPresent(Capability.RESTEASY_REACTIVE)
       || capabilities.isPresent(Capability.RESTEASY)) {
       throw new IllegalStateException(
-        "quarkus-jrestful and Quarkus REST are mutually exclusive; remove the Quarkus REST extension");
+        "quarkus-jrestful-server and Quarkus REST are mutually exclusive; remove the Quarkus REST extension");
     }
     return new FeatureBuildItem(FEATURE);
   }
