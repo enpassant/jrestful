@@ -31,17 +31,7 @@
   <dependencies>
     <dependency>
       <groupId>io.github.enpassant</groupId>
-      <artifactId>jrestful-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.enpassant</groupId>
-      <artifactId>jrestful-server-vertx</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.enpassant</groupId>
-      <artifactId>jrestful-server-jaxrs</artifactId>
+      <artifactId>quarkus-jrestful</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -49,10 +39,6 @@
       <artifactId>jrestful-example-quarkus-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-arc</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-vertx</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-vertx-http</artifactId></dependency>
-    <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-jackson</artifactId></dependency>
     <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-smallrye-jwt</artifactId></dependency>
     <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-smallrye-jwt-build</artifactId></dependency>
     <dependency><groupId>io.quarkus</groupId><artifactId>quarkus-elytron-security-properties-file</artifactId></dependency>

@@ -17,6 +17,8 @@
     <module>modules/jrestful-example</module>
     <module>modules/jrestful-server-vertx</module>
     <module>modules/jrestful-server-jaxrs</module>
+    <module>modules/quarkus-jrestful</module>
+    <module>modules/quarkus-jrestful-deployment</module>
     <module>modules/jrestful-client-vertx</module>
     <module>modules/jrestful-example-quarkus-api</module>
     <module>modules/jrestful-example-quarkus-server</module>
@@ -66,6 +68,7 @@
     <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+    <quarkus.platform.version>3.40.1.2</quarkus.platform.version>
 
     <vertx.version>4.4.5</vertx.version>
     <junit-jupiter.version>5.9.1</junit-jupiter.version>

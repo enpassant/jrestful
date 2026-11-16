@@ -32,6 +32,13 @@ class AccountServerTest {
   }
 
   @Test
+  void listsAccountsWithABrowserStyleGenericAcceptHeader() {
+    given().auth().preemptive().basic("admin", "xxx").accept("*/*")
+      .when().get("/account").then().statusCode(200)
+      .body(startsWith("["));
+  }
+
+  @Test
   void servesAnAnnotatedPutResourceMethod() {
     given().auth().preemptive().basic("admin", "xxx")
       .contentType("application/Name+json").accept("application/Account+json")

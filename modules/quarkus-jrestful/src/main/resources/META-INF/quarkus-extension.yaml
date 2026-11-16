@@ -1,0 +1,11 @@
+name: jrestful
+description: Build-time Quarkus integration for jrestful JAX-RS resources
+metadata:
+  short-name: jrestful
+  keywords:
+    - jrestful
+    - jax-rs
+    - hateoas
+  categories:
+    - web
+  status: experimental

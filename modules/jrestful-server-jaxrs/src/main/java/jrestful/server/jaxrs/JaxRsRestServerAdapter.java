@@ -20,10 +20,7 @@ import jrestful.server.RestServer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,15 +47,35 @@ public final class JaxRsRestServerAdapter {
     this.authorizationFactory = authorizationFactory;
   }
 
-  public void register(final RestApi api, final Object resource) {
-    final Class<?> resourceType = resource.getClass();
-    final String rootPath = pathOf(resourceType.getAnnotation(Path.class));
-    final Map<String, Consumer<RequestContext>> headProcessors = headProcessors(resource);
+  public void register(final RestApi api, final Object... resources) {
+    if (resources.length == 0) {
+      throw new IllegalArgumentException("At least one JAX-RS resource is required");
+    }
+    final Map<String, Consumer<RequestContext>> headProcessors = new HashMap<>();
+    for (final Object resource : resources) {
+      collectHeadProcessors(resource, headProcessors);
+    }
 
-    server.init(api, ignored -> Arrays.stream(resourceType.getDeclaredMethods())
-      .filter(method -> !method.isAnnotationPresent(HEAD.class))
-      .filter(method -> method.getAnnotationsByType(JRestTransition.class).length > 0)
-      .forEach(method -> registerMethod(api, resource, rootPath, headProcessors, method)));
+    server.init(api, ignored -> Arrays.stream(resources).forEach(resource -> {
+      final Class<?> resourceType = resourceType(resource);
+      final String rootPath = pathOf(resourceType.getAnnotation(Path.class));
+      Arrays.stream(resourceType.getDeclaredMethods())
+        .filter(method -> !method.isAnnotationPresent(HEAD.class))
+        .filter(method -> method.getAnnotationsByType(JRestTransition.class).length > 0)
+        .sorted(Comparator.comparingInt(method -> transitionOrder(api, method)))
+        .forEach(method -> registerMethod(api, resource, rootPath, headProcessors, method));
+    }));
+  }
+
+  private int transitionOrder(final RestApi api, final Method method) {
+    final JRestTransition[] bindings = method.getAnnotationsByType(JRestTransition.class);
+    if (bindings.length != 1) return Integer.MAX_VALUE;
+
+    final Transition[] transitions = api.transition();
+    for (int index = 0; index < transitions.length; index++) {
+      if (transitions[index].name().equals(bindings[0].value())) return index;
+    }
+    return Integer.MAX_VALUE;
   }
 
   private void registerMethod(
@@ -80,7 +97,7 @@ public final class JaxRsRestServerAdapter {
     validateMediaTypes(method, transition);
 
     final String path = joinPaths(rootPath, pathOf(method.getAnnotation(Path.class)));
-    final RestAuthorization authorization = authorization(resource.getClass(), method);
+    final RestAuthorization authorization = authorization(resourceType(resource), method);
     final Consumer<RequestContext> process = context -> invoke(resource, method, context);
     final Consumer<RequestContext> processHead = headProcessors.get(binding.value());
 
@@ -91,9 +108,11 @@ public final class JaxRsRestServerAdapter {
     }
   }
 
-  private Map<String, Consumer<RequestContext>> headProcessors(final Object resource) {
-    final Map<String, Consumer<RequestContext>> result = new HashMap<>();
-    Arrays.stream(resource.getClass().getDeclaredMethods())
+  private void collectHeadProcessors(
+    final Object resource,
+    final Map<String, Consumer<RequestContext>> result
+  ) {
+    Arrays.stream(resourceType(resource).getDeclaredMethods())
       .filter(method -> method.isAnnotationPresent(HEAD.class))
       .forEach(method -> {
         validateHandler(method);
@@ -109,7 +128,17 @@ public final class JaxRsRestServerAdapter {
           }
         }
       });
-    return result;
+  }
+
+  private Class<?> resourceType(final Object resource) {
+    Class<?> type = resource.getClass();
+    while (type != Object.class && !type.isAnnotationPresent(Path.class)) {
+      type = type.getSuperclass();
+    }
+    if (type == Object.class) {
+      throw new IllegalArgumentException("JAX-RS resource must declare @Path: " + resource.getClass());
+    }
+    return type;
   }
 
   private RestAuthorization authorization(final Class<?> resourceType, final Method method) {
@@ -175,7 +204,7 @@ public final class JaxRsRestServerAdapter {
     return Arrays.stream(method.getAnnotations())
       .map(Annotation::annotationType)
       .map(type -> type.getAnnotation(HttpMethod.class))
-      .filter(annotation -> annotation != null)
+      .filter(Objects::nonNull)
       .map(HttpMethod::value)
       .findFirst()
       .orElse(null);
